@@ -423,7 +423,9 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:steam/screen/MainPage.dart';
 import 'package:steam/screen/HomeScreen.dart';
-import 'firebase_options.dart'; // Make sure this file exists
+import 'firebase_options.dart';
+import 'package:url_strategy/url_strategy.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -435,6 +437,7 @@ void main() async {
 
     await Firebase.initializeApp();
   }
+  setPathUrlStrategy();
   runApp(const MyApp());
 }
 

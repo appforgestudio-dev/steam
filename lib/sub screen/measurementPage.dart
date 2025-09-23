@@ -82,25 +82,29 @@ class _MeasurementsPageState extends State<MeasurementsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Enter Your Measurements',style: TextStyle(color: Colors.white),),
-        backgroundColor: bgColorPink,
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          // For wider screens (web), center the form with a max width
-          if (constraints.maxWidth > 600) {
-            return Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 500),
-                child: _buildForm(),
-              ),
-            );
-          }
-          // For narrower screens (mobile), the form takes the full width
-          return _buildForm();
-        },
+    return Title(
+      title: 'V12 Laundry | Measurement',
+      color: bgColorPink,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Enter Your Measurements',style: TextStyle(color: Colors.white),),
+          backgroundColor: bgColorPink,
+        ),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            // For wider screens (web), center the form with a max width
+            if (constraints.maxWidth > 600) {
+              return Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: _buildForm(),
+                ),
+              );
+            }
+            // For narrower screens (mobile), the form takes the full width
+            return _buildForm();
+          },
+        ),
       ),
     );
   }

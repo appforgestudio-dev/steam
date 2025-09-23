@@ -526,14 +526,18 @@ class _FeedbackPageState extends State<FeedbackPage> {
   @override
   Widget build(BuildContext context) {
     if (_showThankYou) {
-      return Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(
-          child: Lottie.asset(
-            'assets/animations/thankyou.json',
-            repeat: false,
-            width: 200,
-            height: 200,
+      return Title(
+        title: 'Feedback Noted!',
+        color: bgColorPink,
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          body: Center(
+            child: Lottie.asset(
+              'assets/animations/thankyou.json',
+              repeat: false,
+              width: 200,
+              height: 200,
+            ),
           ),
         ),
       );
@@ -543,24 +547,28 @@ class _FeedbackPageState extends State<FeedbackPage> {
     const mobileBreakpoint = 800.0;
     final bool isMobile = screenWidth < mobileBreakpoint;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Feedback", style: TextStyle(color: Colors.white)),
-        backgroundColor: bgColorPink,
-        iconTheme: const IconThemeData(color: Colors.white),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 20, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        elevation: 0,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(12),
+    return Title(
+      title: 'V12 Laundry | Feedback',
+      color: bgColorPink,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Feedback", style: TextStyle(color: Colors.white)),
+          backgroundColor: bgColorPink,
+          iconTheme: const IconThemeData(color: Colors.white),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios, size: 20, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+          elevation: 0,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(12),
+            ),
           ),
         ),
-      ),
-      body: SafeArea(
-        child: isMobile ? _buildMobileLayout(context) : _buildWebLayout(context),
+        body: SafeArea(
+          child: isMobile ? _buildMobileLayout(context) : _buildWebLayout(context),
+        ),
       ),
     );
   }

@@ -115,16 +115,20 @@ class MainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
 
-    return Scaffold(
-      backgroundColor: bgColorPink,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth > 600) {
-            return _buildWebLayout(context);
-          } else {
-            return _buildMobileLayout(context);
-          }
-        },
+    return Title(
+      title: 'Welcome V12 Laundry',
+      color: bgColorPink,
+      child: Scaffold(
+        backgroundColor: bgColorPink,
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth > 600) {
+              return _buildWebLayout(context);
+            } else {
+              return _buildMobileLayout(context);
+            }
+          },
+        ),
       ),
     );
   }

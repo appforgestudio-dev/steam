@@ -235,23 +235,27 @@ class ContactPage extends StatelessWidget {
     const mobileBreakpoint = 600.0;
     final bool isMobile = screenWidth < mobileBreakpoint;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Contact Us", style: TextStyle(color: Colors.white)),
-        backgroundColor: bgColorPink,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 20, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        elevation: 0,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(12),
+    return Title(
+      title: 'V12 Laundry | Contact',
+      color: bgColorPink,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Contact Us", style: TextStyle(color: Colors.white)),
+          backgroundColor: bgColorPink,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios, size: 20, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
           ),
+          elevation: 0,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(12),
+            ),
+          ),
+          iconTheme: const IconThemeData(color: Colors.white),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        body: isMobile ? _buildMobileLayout(context) : _buildWebLayout(context),
       ),
-      body: isMobile ? _buildMobileLayout(context) : _buildWebLayout(context),
     );
   }
 }

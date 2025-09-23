@@ -4876,135 +4876,139 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final bool isMobile = MediaQuery.of(context).size.width < 1000;
 
-    return WillPopScope(
-      onWillPop: () async {
-        SystemNavigator.pop();
-        return false;
-      },
-      child: Scaffold(
-        drawer: _buildDrawerMenu(),
-        appBar: AppBar(
-          backgroundColor: bgColorPink,
-          elevation: 0,
-          title: const Text(''),
-          iconTheme: const IconThemeData(color: Colors.white),
-          actions: [
-            InkWell(
-              onTap: (){_showAddressSelectionSheet(onAddressChanged: _loadCurrentAddress);},
-              borderRadius: BorderRadius.circular(20),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.location_on, color: Colors.white, size: 18),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        _currentAddress != null
-                            ? (_currentAddress!['label'] as String? ?? 'Select Address')
-                            : 'Select Address',
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
-                        overflow: TextOverflow.ellipsis,
+    return Title(
+      title:'V12 Laundry | Home',
+      color: bgColorPink,
+      child: WillPopScope(
+        onWillPop: () async {
+          SystemNavigator.pop();
+          return false;
+        },
+        child: Scaffold(
+          drawer: _buildDrawerMenu(),
+          appBar: AppBar(
+            backgroundColor: bgColorPink,
+            elevation: 0,
+            title: const Text(''),
+            iconTheme: const IconThemeData(color: Colors.white),
+            actions: [
+              InkWell(
+                onTap: (){_showAddressSelectionSheet(onAddressChanged: _loadCurrentAddress);},
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.location_on, color: Colors.white, size: 18),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          _currentAddress != null
+                              ? (_currentAddress!['label'] as String? ?? 'Select Address')
+                              : 'Select Address',
+                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 4),
-            Stack(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.shopping_cart, color: Colors.white),
-                  onPressed: () async {
-                    try {
-                      final savedCart = await CartPersistence.loadCart() ?? {};
-                      final dryCleanItems = (savedCart['dryCleanItems'] as Map<String, dynamic>? ?? {})
-                          .map((key, value) => MapEntry(
-                          key, value is int ? value : int.tryParse(value.toString()) ?? 0));
-                      final ironingItems = (savedCart['ironingItems'] as Map<String, dynamic>? ?? {})
-                          .map((key, value) => MapEntry(
-                          key, value is int ? value : int.tryParse(value.toString()) ?? 0));
-                      final washAndFoldItems = (savedCart['washAndFoldItems'] as Map<String, dynamic>? ?? {})
-                          .map((key, value) => MapEntry(
-                          key, value is int ? value : int.tryParse(value.toString()) ?? 0));
-                      final washAndIronItems = (savedCart['washAndIronItems'] as Map<String, dynamic>? ?? {})
-                          .map((key, value) => MapEntry(
-                          key, value is int ? value : int.tryParse(value.toString()) ?? 0));
-                      final washIronStarchItems = (savedCart['washIronStarchItems'] as Map<String, dynamic>? ?? {})
-                          .map((key, value) => MapEntry(
-                          key, value is int ? value : int.tryParse(value.toString()) ?? 0));
-                      final prePlatedItems = (savedCart['prePlatedItems'] as Map<String, dynamic>? ?? {})
-                          .map((key, value) => MapEntry(key, Map<String, dynamic>.from(value)));
-                      final additionalServices = (savedCart['additionalServices'] as Map<String, dynamic>? ?? {})
-                          .map((key, value) => MapEntry(key, (value as List<dynamic>).cast<Map<String, dynamic>>()));
-                      final dryCleanTotal = savedCart['dryCleanTotal'] as double? ?? 0.0;
-                      final additionalTotal = savedCart['additionalTotal'] as double? ?? 0.0;
-
-                      Navigator.push(
-                        context,
-                        PageTransition(
-                          type: PageTransitionType.rightToLeft,
-                          child: CartPage(
-                            dryCleanItems: dryCleanItems,
-                            ironingItems: ironingItems,
-                            washAndFoldItems: washAndFoldItems,
-                            washAndIronItems: washAndIronItems,
-                            washIronStarchItems: washIronStarchItems,
-                            prePlatedItems: prePlatedItems,
-                            additionalServices: additionalServices,
-                            dryCleanTotal: dryCleanTotal,
-                            additionalTotal: additionalTotal,
+              const SizedBox(width: 4),
+              Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.shopping_cart, color: Colors.white),
+                    onPressed: () async {
+                      try {
+                        final savedCart = await CartPersistence.loadCart() ?? {};
+                        final dryCleanItems = (savedCart['dryCleanItems'] as Map<String, dynamic>? ?? {})
+                            .map((key, value) => MapEntry(
+                            key, value is int ? value : int.tryParse(value.toString()) ?? 0));
+                        final ironingItems = (savedCart['ironingItems'] as Map<String, dynamic>? ?? {})
+                            .map((key, value) => MapEntry(
+                            key, value is int ? value : int.tryParse(value.toString()) ?? 0));
+                        final washAndFoldItems = (savedCart['washAndFoldItems'] as Map<String, dynamic>? ?? {})
+                            .map((key, value) => MapEntry(
+                            key, value is int ? value : int.tryParse(value.toString()) ?? 0));
+                        final washAndIronItems = (savedCart['washAndIronItems'] as Map<String, dynamic>? ?? {})
+                            .map((key, value) => MapEntry(
+                            key, value is int ? value : int.tryParse(value.toString()) ?? 0));
+                        final washIronStarchItems = (savedCart['washIronStarchItems'] as Map<String, dynamic>? ?? {})
+                            .map((key, value) => MapEntry(
+                            key, value is int ? value : int.tryParse(value.toString()) ?? 0));
+                        final prePlatedItems = (savedCart['prePlatedItems'] as Map<String, dynamic>? ?? {})
+                            .map((key, value) => MapEntry(key, Map<String, dynamic>.from(value)));
+                        final additionalServices = (savedCart['additionalServices'] as Map<String, dynamic>? ?? {})
+                            .map((key, value) => MapEntry(key, (value as List<dynamic>).cast<Map<String, dynamic>>()));
+                        final dryCleanTotal = savedCart['dryCleanTotal'] as double? ?? 0.0;
+                        final additionalTotal = savedCart['additionalTotal'] as double? ?? 0.0;
+      
+                        Navigator.push(
+                          context,
+                          PageTransition(
+                            type: PageTransitionType.rightToLeft,
+                            child: CartPage(
+                              dryCleanItems: dryCleanItems,
+                              ironingItems: ironingItems,
+                              washAndFoldItems: washAndFoldItems,
+                              washAndIronItems: washAndIronItems,
+                              washIronStarchItems: washIronStarchItems,
+                              prePlatedItems: prePlatedItems,
+                              additionalServices: additionalServices,
+                              dryCleanTotal: dryCleanTotal,
+                              additionalTotal: additionalTotal,
+                            ),
                           ),
+                        ).then((_) {
+                          _checkPremiumBookedStatus();
+                          _updateCartItemCount();
+                        });
+                      } catch (e) {
+                        _showSnackBar("Error loading cart: ${e.toString()}", isError: true);
+                      }
+                    },
+                  ),
+                  if (_cartItemCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
                         ),
-                      ).then((_) {
-                        _checkPremiumBookedStatus();
-                        _updateCartItemCount();
-                      });
-                    } catch (e) {
-                      _showSnackBar("Error loading cart: ${e.toString()}", isError: true);
-                    }
-                  },
-                ),
-                if (_cartItemCount > 0)
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 16,
-                        minHeight: 16,
-                      ),
-                      child: Text(
-                        _cartItemCount.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
                         ),
-                        textAlign: TextAlign.center,
+                        child: Text(
+                          _cartItemCount.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-            IconButton(
-              icon: const Icon(Icons.account_circle, color: Colors.white),
-              onPressed: _showProfileSheet,
-            ),
-          ],
+                ],
+              ),
+              IconButton(
+                icon: const Icon(Icons.account_circle, color: Colors.white),
+                onPressed: _showProfileSheet,
+              ),
+            ],
+          ),
+          body: isMobile ? _buildMobileLayout() : _buildWebLayout(),
         ),
-        body: isMobile ? _buildMobileLayout() : _buildWebLayout(),
       ),
     );
   }

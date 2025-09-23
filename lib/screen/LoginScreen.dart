@@ -477,27 +477,31 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: bgColorPink,
-      appBar: kIsWeb
-          ? null
-          : AppBar(
+    return Title(
+      title: 'V12 Laundry | Login',
+      color: bgColorPink,
+      child: Scaffold(
         backgroundColor: bgColorPink,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
-          onPressed: _isLoading ? null : () => Navigator.pop(context),
+        appBar: kIsWeb
+            ? null
+            : AppBar(
+          backgroundColor: bgColorPink,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
+            onPressed: _isLoading ? null : () => Navigator.pop(context),
+          ),
         ),
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          // Use a breakpoint, for example, 800 pixels
-          if (constraints.maxWidth > 800) {
-            return _buildWebLayout(context);
-          } else {
-            return _buildMobileLayout(context);
-          }
-        },
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            // Use a breakpoint, for example, 800 pixels
+            if (constraints.maxWidth > 800) {
+              return _buildWebLayout(context);
+            } else {
+              return _buildMobileLayout(context);
+            }
+          },
+        ),
       ),
     );
   }

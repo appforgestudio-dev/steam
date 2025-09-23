@@ -1954,179 +1954,212 @@ class _CartPageState extends State<CartPage> {
 
     final showPlaceOrderButton = total > 0 || _isOnlyRegularWash();
 
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text(
-          "Cart",
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
-            color: Colors.white,
-          ),
-        ),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 20, color: Colors.white),
-          onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>HomePage())),
-        ),
-        actions: [
-          InkWell(
-            onTap: _showAddressSelectionSheet,
-            borderRadius: BorderRadius.circular(20),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.location_on, color: Colors.white, size: 18),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      _currentAddress != null ? (_currentAddress!['label'] as String? ?? 'Select Address') : 'Select Address',
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
+    return Title(
+      title: 'V12 Laundry | Cart',
+      color: constants.bgColorPink,
+      child: Scaffold(
+        backgroundColor: Colors.grey[50],
+        appBar: AppBar(
+          title: const Text(
+            "Cart",
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 20,
+              color: Colors.white,
             ),
           ),
-          const SizedBox(width: 4),
-          IconButton(
-            icon: const Icon(Icons.delete_forever, size: 24, color: Colors.white),
-            onPressed: _clearCart,
-            tooltip: 'Clear Cart',
+          centerTitle: true,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios, size: 20, color: Colors.white),
+            onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>HomePage())),
           ),
+          actions: [
+            InkWell(
+              onTap: _showAddressSelectionSheet,
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.location_on, color: Colors.white, size: 18),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        _currentAddress != null ? (_currentAddress!['label'] as String? ?? 'Select Address') : 'Select Address',
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            IconButton(
+              icon: const Icon(Icons.delete_forever, size: 24, color: Colors.white),
+              onPressed: _clearCart,
+              tooltip: 'Clear Cart',
+            ),
 
-        ],
-        backgroundColor: constants.bgColorPink,
-        elevation: 0,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(12),
+          ],
+          backgroundColor: constants.bgColorPink,
+          elevation: 0,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(12),
+            ),
           ),
         ),
-      ),
-      // UPDATED to use the responsive wrapper
-      body: _buildResponsiveBody(
-        child: _dryCleanQuantities.isEmpty &&
-            _ironingQuantities.isEmpty &&
-            _washAndFoldQuantities.isEmpty &&
-            _washAndIronQuantities.isEmpty &&
-            _washIronStarchQuantities.isEmpty &&
-            _prePlatedQuantities.isEmpty &&
-            _additionalServices.isEmpty
-            ? Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Lottie.asset(
-                'assets/animations/empty.json',
-                width: 250,
-                height: 250,
-                fit: BoxFit.contain,
-              ),
-              const SizedBox(height: 20),
-              Text(
-                "Your Cart is Empty",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[800],
+        // UPDATED to use the responsive wrapper
+        body: _buildResponsiveBody(
+          child: _dryCleanQuantities.isEmpty &&
+              _ironingQuantities.isEmpty &&
+              _washAndFoldQuantities.isEmpty &&
+              _washAndIronQuantities.isEmpty &&
+              _washIronStarchQuantities.isEmpty &&
+              _prePlatedQuantities.isEmpty &&
+              _additionalServices.isEmpty
+              ? Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Lottie.asset(
+                  'assets/animations/empty.json',
+                  width: 250,
+                  height: 250,
+                  fit: BoxFit.contain,
                 ),
-              ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: Text(
-                  "Add some items to get started with your laundry",
-                  textAlign: TextAlign.center,
+                const SizedBox(height: 20),
+                Text(
+                  "Your Cart is Empty",
                   style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[800],
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: 200,
-                child: ElevatedButton(
-                  onPressed: _navigateToHome,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: constants.bgColorPink,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  child: const Text(
-                    "Browse Services",
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Text(
+                    "Add some items to get started with your laundry",
+                    textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: Colors.grey[600],
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        )
-            : Column(
-          children: [
-            if (_measurementsExist)
-              _buildEditMeasurementsButton(context),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 8),
-                    if (_dryCleanQuantities.isNotEmpty) ...[
-                      _buildSectionHeader("Dry Clean"),
-                      ..._dryCleanQuantities.entries.map((entry) {
-                        final transformedName = entry.key.replaceAll('/', '-');
-                        final item = _dryCleanPrices.firstWhere(
-                              (item) => item["name"] == transformedName,
-                          orElse: () => {"dry_clean": 0.0, "image": ""},
-                        );
-                        final price = item["dry_clean"] as double;
-                        return _buildCartItem(
-                          context,
-                          leading: item["image"] != ""
-                              ? Image.network(
-                            item["image"],
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Icon(Icons.dry_cleaning, color: Colors.blue[700], size: 40),
-                          )
-                              : Icon(Icons.dry_cleaning, color: Colors.blue[700], size: 40),
-                          title: transformedName,
-                          subtitle: price > 0 ? "₹${price.toStringAsFixed(2)} each" : "Price not available",
-                          quantity: entry.value,
-                          onDecrement: () {
-                            setState(() {
-                              if (entry.value > 1) {
-                                _dryCleanQuantities[entry.key] = entry.value - 1;
-                                _additionalServices.forEach((category, items) {
-                                  for (var item in items) {
-                                    if (item["name"] == entry.key) {
-                                      final maxQuantity = _dryCleanQuantities[entry.key] ?? 0;
-                                      if ((item["quantity"] ?? 0) > maxQuantity) {
-                                        item["quantity"] = maxQuantity;
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: 200,
+                  child: ElevatedButton(
+                    onPressed: _navigateToHome,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: constants.bgColorPink,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text(
+                      "Browse Services",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+              : Column(
+            children: [
+              if (_measurementsExist)
+                _buildEditMeasurementsButton(context),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 8),
+                      if (_dryCleanQuantities.isNotEmpty) ...[
+                        _buildSectionHeader("Dry Clean"),
+                        ..._dryCleanQuantities.entries.map((entry) {
+                          final transformedName = entry.key.replaceAll('/', '-');
+                          final item = _dryCleanPrices.firstWhere(
+                                (item) => item["name"] == transformedName,
+                            orElse: () => {"dry_clean": 0.0, "image": ""},
+                          );
+                          final price = item["dry_clean"] as double;
+                          return _buildCartItem(
+                            context,
+                            leading: item["image"] != ""
+                                ? Image.network(
+                              item["image"],
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Icon(Icons.dry_cleaning, color: Colors.blue[700], size: 40),
+                            )
+                                : Icon(Icons.dry_cleaning, color: Colors.blue[700], size: 40),
+                            title: transformedName,
+                            subtitle: price > 0 ? "₹${price.toStringAsFixed(2)} each" : "Price not available",
+                            quantity: entry.value,
+                            onDecrement: () {
+                              setState(() {
+                                if (entry.value > 1) {
+                                  _dryCleanQuantities[entry.key] = entry.value - 1;
+                                  _additionalServices.forEach((category, items) {
+                                    for (var item in items) {
+                                      if (item["name"] == entry.key) {
+                                        final maxQuantity = _dryCleanQuantities[entry.key] ?? 0;
+                                        if ((item["quantity"] ?? 0) > maxQuantity) {
+                                          item["quantity"] = maxQuantity;
+                                        }
                                       }
                                     }
-                                  }
-                                });
-                              } else {
+                                  });
+                                } else {
+                                  _dryCleanQuantities.remove(entry.key);
+                                  _additionalServices.forEach((category, items) {
+                                    items.removeWhere((item) => item["name"] == entry.key);
+                                    if (items.isEmpty) {
+                                      _additionalServices.remove(category);
+                                    }
+                                  });
+                                }
+                                _dryCleanTotal = _calculateDryCleanTotal();
+                                _additionalTotal = _calculateAdditionalTotal();
+                                CartPersistence.updateCart(
+                                  dryCleanItems: _dryCleanQuantities,
+                                  additionalServices: _additionalServices,
+                                  dryCleanTotal: _dryCleanTotal,
+                                  additionalTotal: _additionalTotal,
+                                );
+                              });
+                            },
+                            onIncrement: () {
+                              setState(() {
+                                _dryCleanQuantities[entry.key] = entry.value + 1;
+                                _dryCleanTotal = _calculateDryCleanTotal();
+                                CartPersistence.updateCart(
+                                  dryCleanItems: _dryCleanQuantities,
+                                  dryCleanTotal: _dryCleanTotal,
+                                );
+                              });
+                            },
+                            onRemove: () {
+                              setState(() {
                                 _dryCleanQuantities.remove(entry.key);
                                 _additionalServices.forEach((category, items) {
                                   items.removeWhere((item) => item["name"] == entry.key);
@@ -2134,576 +2167,547 @@ class _CartPageState extends State<CartPage> {
                                     _additionalServices.remove(category);
                                   }
                                 });
-                              }
-                              _dryCleanTotal = _calculateDryCleanTotal();
-                              _additionalTotal = _calculateAdditionalTotal();
-                              CartPersistence.updateCart(
-                                dryCleanItems: _dryCleanQuantities,
-                                additionalServices: _additionalServices,
-                                dryCleanTotal: _dryCleanTotal,
-                                additionalTotal: _additionalTotal,
-                              );
-                            });
-                          },
-                          onIncrement: () {
-                            setState(() {
-                              _dryCleanQuantities[entry.key] = entry.value + 1;
-                              _dryCleanTotal = _calculateDryCleanTotal();
-                              CartPersistence.updateCart(
-                                dryCleanItems: _dryCleanQuantities,
-                                dryCleanTotal: _dryCleanTotal,
-                              );
-                            });
-                          },
-                          onRemove: () {
-                            setState(() {
-                              _dryCleanQuantities.remove(entry.key);
-                              _additionalServices.forEach((category, items) {
-                                items.removeWhere((item) => item["name"] == entry.key);
-                                if (items.isEmpty) {
-                                  _additionalServices.remove(category);
-                                }
+                                _dryCleanTotal = _calculateDryCleanTotal();
+                                _additionalTotal = _calculateAdditionalTotal();
+                                CartPersistence.updateCart(
+                                  dryCleanItems: _dryCleanQuantities,
+                                  additionalServices: _additionalServices,
+                                  dryCleanTotal: _dryCleanTotal,
+                                  additionalTotal: _additionalTotal,
+                                );
                               });
-                              _dryCleanTotal = _calculateDryCleanTotal();
-                              _additionalTotal = _calculateAdditionalTotal();
-                              CartPersistence.updateCart(
-                                dryCleanItems: _dryCleanQuantities,
-                                additionalServices: _additionalServices,
-                                dryCleanTotal: _dryCleanTotal,
-                                additionalTotal: _additionalTotal,
-                              );
-                            });
-                          },
-                        );
-                      }),
-                    ],
-                    if (_ironingQuantities.isNotEmpty) ...[
-                      _buildSectionHeader("Ironing"),
-                      ..._ironingQuantities.entries.map((entry) {
-                        final transformedName = entry.key.replaceAll('/', '-');
-                        final item = _ironingPrices.firstWhere(
-                              (item) => item["name"] == transformedName,
-                          orElse: () => {"price": 0.0, "image": ""},
-                        );
-                        final price = item["price"] as double;
-                        return _buildCartItem(
-                          context,
-                          leading: item["image"] != ""
-                              ? Image.network(
-                            item["image"],
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Icon(Icons.iron, color: Colors.red[700], size: 40),
-                          )
-                              : Icon(Icons.iron, color: Colors.red[700], size: 40),
-                          title: transformedName,
-                          subtitle: price > 0 ? "₹${price.toStringAsFixed(2)} each" : "Price not available",
-                          quantity: entry.value,
-                          onDecrement: () {
-                            setState(() {
-                              if (entry.value > 1) {
-                                _ironingQuantities[entry.key] = entry.value - 1;
-                              } else {
+                            },
+                          );
+                        }),
+                      ],
+                      if (_ironingQuantities.isNotEmpty) ...[
+                        _buildSectionHeader("Ironing"),
+                        ..._ironingQuantities.entries.map((entry) {
+                          final transformedName = entry.key.replaceAll('/', '-');
+                          final item = _ironingPrices.firstWhere(
+                                (item) => item["name"] == transformedName,
+                            orElse: () => {"price": 0.0, "image": ""},
+                          );
+                          final price = item["price"] as double;
+                          return _buildCartItem(
+                            context,
+                            leading: item["image"] != ""
+                                ? Image.network(
+                              item["image"],
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Icon(Icons.iron, color: Colors.red[700], size: 40),
+                            )
+                                : Icon(Icons.iron, color: Colors.red[700], size: 40),
+                            title: transformedName,
+                            subtitle: price > 0 ? "₹${price.toStringAsFixed(2)} each" : "Price not available",
+                            quantity: entry.value,
+                            onDecrement: () {
+                              setState(() {
+                                if (entry.value > 1) {
+                                  _ironingQuantities[entry.key] = entry.value - 1;
+                                } else {
+                                  _ironingQuantities.remove(entry.key);
+                                }
+                                _ironingTotal = _calculateIroningTotal();
+                                CartPersistence.updateCart(
+                                  ironingItems: _ironingQuantities,
+                                );
+                              });
+                            },
+                            onIncrement: () {
+                              setState(() {
+                                _ironingQuantities[entry.key] = entry.value + 1;
+                                _ironingTotal = _calculateIroningTotal();
+                                CartPersistence.updateCart(
+                                  ironingItems: _ironingQuantities,
+                                );
+                              });
+                            },
+                            onRemove: () {
+                              setState(() {
                                 _ironingQuantities.remove(entry.key);
-                              }
-                              _ironingTotal = _calculateIroningTotal();
-                              CartPersistence.updateCart(
-                                ironingItems: _ironingQuantities,
-                              );
-                            });
-                          },
-                          onIncrement: () {
-                            setState(() {
-                              _ironingQuantities[entry.key] = entry.value + 1;
-                              _ironingTotal = _calculateIroningTotal();
-                              CartPersistence.updateCart(
-                                ironingItems: _ironingQuantities,
-                              );
-                            });
-                          },
-                          onRemove: () {
-                            setState(() {
-                              _ironingQuantities.remove(entry.key);
-                              _ironingTotal = _calculateIroningTotal();
-                              CartPersistence.updateCart(
-                                ironingItems: _ironingQuantities,
-                              );
-                            });
-                          },
-                        );
-                      }),
-                    ],
-                    if (_washAndFoldQuantities.isNotEmpty) ...[
-                      _buildSectionHeader("Wash & Fold"),
-                      ..._washAndFoldQuantities.entries.map((entry) {
-                        final item = _washAndFoldPrices.firstWhere(
-                              (item) => item["label"] == entry.key,
-                          orElse: () => {"price": 0.0, "unit": ""},
-                        );
-                        final price = item["price"] as double;
-                        final unit = item["unit"] ?? "";
-                        final displayName = entry.key.contains(": ") ? entry.key.split(": ")[1] : entry.key;
-                        return _buildCartItem(
-                          context,
-                          leading: Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.green[100],
-                              borderRadius: BorderRadius.circular(12),
+                                _ironingTotal = _calculateIroningTotal();
+                                CartPersistence.updateCart(
+                                  ironingItems: _ironingQuantities,
+                                );
+                              });
+                            },
+                          );
+                        }),
+                      ],
+                      if (_washAndFoldQuantities.isNotEmpty) ...[
+                        _buildSectionHeader("Wash & Fold"),
+                        ..._washAndFoldQuantities.entries.map((entry) {
+                          final item = _washAndFoldPrices.firstWhere(
+                                (item) => item["label"] == entry.key,
+                            orElse: () => {"price": 0.0, "unit": ""},
+                          );
+                          final price = item["price"] as double;
+                          final unit = item["unit"] ?? "";
+                          final displayName = entry.key.contains(": ") ? entry.key.split(": ")[1] : entry.key;
+                          return _buildCartItem(
+                            context,
+                            leading: Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: Colors.green[100],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.local_laundry_service,
+                                color: Colors.green[700],
+                                size: 30,
+                              ),
                             ),
-                            child: Icon(
-                              Icons.local_laundry_service,
-                              color: Colors.green[700],
-                              size: 30,
+                            title: displayName,
+                            subtitle: price > 0 ? "₹${price.toStringAsFixed(2)} $unit" : "Price not available",
+                            quantity: entry.value,
+                            showQuantityControls: false,
+                            showQuantity: false,
+                            onRemove: () {
+                              setState(() {
+                                _washAndFoldQuantities.remove(entry.key);
+                                _washAndFoldTotal = _calculateWashAndFoldTotal();
+                                _updateRemainingWashes(entry.key, 'washAndFold', 1);
+                                CartPersistence.updateCart(
+                                  washAndFoldItems: _washAndFoldQuantities,
+                                );
+                              });
+                            },
+                          );
+                        }),
+                      ],
+                      if (_washAndIronQuantities.isNotEmpty) ...[
+                        _buildSectionHeader("Wash & Iron"),
+                        ..._washAndIronQuantities.entries.map((entry) {
+                          final item = _washAndIronPrices.firstWhere(
+                                (item) => item["label"] == entry.key,
+                            orElse: () => {"price": 0.0, "unit": ""},
+                          );
+                          final price = item["price"] as double;
+                          final unit = item["unit"] ?? "";
+                          final displayName = entry.key.contains(": ") ? entry.key.split(": ")[1] : entry.key;
+                          return _buildCartItem(
+                            context,
+                            leading: Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: Colors.blue[100],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.local_laundry_service,
+                                color: Colors.blue[700],
+                                size: 30,
+                              ),
                             ),
-                          ),
-                          title: displayName,
-                          subtitle: price > 0 ? "₹${price.toStringAsFixed(2)} $unit" : "Price not available",
-                          quantity: entry.value,
-                          showQuantityControls: false,
-                          showQuantity: false,
-                          onRemove: () {
-                            setState(() {
-                              _washAndFoldQuantities.remove(entry.key);
-                              _washAndFoldTotal = _calculateWashAndFoldTotal();
-                              _updateRemainingWashes(entry.key, 'washAndFold', 1);
-                              CartPersistence.updateCart(
-                                washAndFoldItems: _washAndFoldQuantities,
-                              );
-                            });
-                          },
-                        );
-                      }),
-                    ],
-                    if (_washAndIronQuantities.isNotEmpty) ...[
-                      _buildSectionHeader("Wash & Iron"),
-                      ..._washAndIronQuantities.entries.map((entry) {
-                        final item = _washAndIronPrices.firstWhere(
-                              (item) => item["label"] == entry.key,
-                          orElse: () => {"price": 0.0, "unit": ""},
-                        );
-                        final price = item["price"] as double;
-                        final unit = item["unit"] ?? "";
-                        final displayName = entry.key.contains(": ") ? entry.key.split(": ")[1] : entry.key;
-                        return _buildCartItem(
-                          context,
-                          leading: Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.blue[100],
-                              borderRadius: BorderRadius.circular(12),
+                            title: displayName,
+                            subtitle: price > 0 ? "₹${price.toStringAsFixed(2)} $unit" : "Price not available",
+                            quantity: entry.value,
+                            showQuantityControls: false,
+                            showQuantity: false,
+                            onRemove: () {
+                              setState(() {
+                                _washAndIronQuantities.remove(entry.key);
+                                _washAndIronTotal = _calculateWashAndIronTotal();
+                                _updateRemainingWashes(entry.key, 'washAndIron', 1);
+                                CartPersistence.updateCart(
+                                  washAndIronItems: _washAndIronQuantities,
+                                );
+                              });
+                            },
+                          );
+                        }),
+                      ],
+                      if (_washIronStarchQuantities.isNotEmpty) ...[
+                        _buildSectionHeader("Wash & Starch"),
+                        ..._washIronStarchQuantities.entries.map((entry) {
+                          final item = _washIronStarchPrices.firstWhere(
+                                (item) => item["label"] == entry.key,
+                            orElse: () => {"price": 0.0, "unit": ""},
+                          );
+                          final price = item["price"] as double;
+                          final unit = item["unit"] ?? "";
+                          final displayName = entry.key.contains(": ") ? entry.key.split(": ")[1] : entry.key;
+                          return _buildCartItem(
+                            context,
+                            leading: Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: Colors.purple[100],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.local_laundry_service,
+                                color: Colors.purple[700],
+                                size: 30,
+                              ),
                             ),
-                            child: Icon(
-                              Icons.local_laundry_service,
-                              color: Colors.blue[700],
-                              size: 30,
+                            title: displayName,
+                            subtitle: price > 0 ? "₹${price.toStringAsFixed(2)} $unit" : "Price not available",
+                            quantity: entry.value,
+                            showQuantityControls: false,
+                            showQuantity: false,
+                            onRemove: () {
+                              setState(() {
+                                _washIronStarchQuantities.remove(entry.key);
+                                _washIronStarchTotal = _calculateWashIronStarchTotal();
+                                _updateRemainingWashes(entry.key, 'washIronStarch', 1);
+                                CartPersistence.updateCart(
+                                  washIronStarchItems: _washIronStarchQuantities,
+                                );
+                              });
+                            },
+                          );
+                        }),
+                      ],
+                      if (_prePlatedQuantities.isNotEmpty) ...[
+                        _buildSectionHeader("Pre-Pleat"),
+                        ..._prePlatedQuantities.entries.map((entry) {
+                          final quantity = entry.value["quantity"] as int? ?? 0;
+                          final pricePerItem = (entry.value["pricePerItem"] as num?)?.toDouble() ?? 0.0;
+                          return _buildCartItem(
+                            context,
+                            leading: Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: Colors.pink[100],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.iron,
+                                color: Colors.pink[700],
+                                size: 30,
+                              ),
                             ),
-                          ),
-                          title: displayName,
-                          subtitle: price > 0 ? "₹${price.toStringAsFixed(2)} $unit" : "Price not available",
-                          quantity: entry.value,
-                          showQuantityControls: false,
-                          showQuantity: false,
-                          onRemove: () {
-                            setState(() {
-                              _washAndIronQuantities.remove(entry.key);
-                              _washAndIronTotal = _calculateWashAndIronTotal();
-                              _updateRemainingWashes(entry.key, 'washAndIron', 1);
-                              CartPersistence.updateCart(
-                                washAndIronItems: _washAndIronQuantities,
-                              );
-                            });
-                          },
-                        );
-                      }),
-                    ],
-                    if (_washIronStarchQuantities.isNotEmpty) ...[
-                      _buildSectionHeader("Wash & Starch"),
-                      ..._washIronStarchQuantities.entries.map((entry) {
-                        final item = _washIronStarchPrices.firstWhere(
-                              (item) => item["label"] == entry.key,
-                          orElse: () => {"price": 0.0, "unit": ""},
-                        );
-                        final price = item["price"] as double;
-                        final unit = item["unit"] ?? "";
-                        final displayName = entry.key.contains(": ") ? entry.key.split(": ")[1] : entry.key;
-                        return _buildCartItem(
-                          context,
-                          leading: Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.purple[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.local_laundry_service,
-                              color: Colors.purple[700],
-                              size: 30,
-                            ),
-                          ),
-                          title: displayName,
-                          subtitle: price > 0 ? "₹${price.toStringAsFixed(2)} $unit" : "Price not available",
-                          quantity: entry.value,
-                          showQuantityControls: false,
-                          showQuantity: false,
-                          onRemove: () {
-                            setState(() {
-                              _washIronStarchQuantities.remove(entry.key);
-                              _washIronStarchTotal = _calculateWashIronStarchTotal();
-                              _updateRemainingWashes(entry.key, 'washIronStarch', 1);
-                              CartPersistence.updateCart(
-                                washIronStarchItems: _washIronStarchQuantities,
-                              );
-                            });
-                          },
-                        );
-                      }),
-                    ],
-                    if (_prePlatedQuantities.isNotEmpty) ...[
-                      _buildSectionHeader("Pre-Pleat"),
-                      ..._prePlatedQuantities.entries.map((entry) {
-                        final quantity = entry.value["quantity"] as int? ?? 0;
-                        final pricePerItem = (entry.value["pricePerItem"] as num?)?.toDouble() ?? 0.0;
-                        return _buildCartItem(
-                          context,
-                          leading: Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.pink[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.iron,
-                              color: Colors.pink[700],
-                              size: 30,
-                            ),
-                          ),
-                          title: entry.key,
-                          subtitle: pricePerItem > 0 ? "₹${pricePerItem.toStringAsFixed(2)} each" : "Price not available",
-                          quantity: quantity,
-                          onDecrement: () {
-                            setState(() {
-                              if (quantity > 1) {
-                                entry.value["quantity"] = quantity - 1;
-                              } else {
+                            title: entry.key,
+                            subtitle: pricePerItem > 0 ? "₹${pricePerItem.toStringAsFixed(2)} each" : "Price not available",
+                            quantity: quantity,
+                            onDecrement: () {
+                              setState(() {
+                                if (quantity > 1) {
+                                  entry.value["quantity"] = quantity - 1;
+                                } else {
+                                  _prePlatedQuantities.remove(entry.key);
+                                }
+                                _prePlatedTotal = _calculatePrePlatedTotal();
+                                CartPersistence.updateCart(
+                                  prePlatedItems: _prePlatedQuantities,
+                                );
+                              });
+                            },
+                            onIncrement: () {
+                              setState(() {
+                                entry.value["quantity"] = quantity + 1;
+                                _prePlatedTotal = _calculatePrePlatedTotal();
+                                CartPersistence.updateCart(
+                                  prePlatedItems: _prePlatedQuantities,
+                                );
+                              });
+                            },
+                            onRemove: () {
+                              setState(() {
                                 _prePlatedQuantities.remove(entry.key);
-                              }
-                              _prePlatedTotal = _calculatePrePlatedTotal();
-                              CartPersistence.updateCart(
-                                prePlatedItems: _prePlatedQuantities,
-                              );
-                            });
-                          },
-                          onIncrement: () {
-                            setState(() {
-                              entry.value["quantity"] = quantity + 1;
-                              _prePlatedTotal = _calculatePrePlatedTotal();
-                              CartPersistence.updateCart(
-                                prePlatedItems: _prePlatedQuantities,
-                              );
-                            });
-                          },
-                          onRemove: () {
-                            setState(() {
-                              _prePlatedQuantities.remove(entry.key);
-                              _prePlatedTotal = _calculatePrePlatedTotal();
-                              CartPersistence.updateCart(
-                                prePlatedItems: _prePlatedQuantities,
-                              );
-                            });
-                          },
-                        );
-                      }),
-                    ],
-                    if (_additionalServices.isNotEmpty) ...[
-                      _buildSectionHeader("Additional Services"),
-                      ..._additionalServices.entries.map((entry) {
-                        final category = entry.key;
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 4, top: 8),
-                                child: Text(
-                                  category,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.grey[700],
+                                _prePlatedTotal = _calculatePrePlatedTotal();
+                                CartPersistence.updateCart(
+                                  prePlatedItems: _prePlatedQuantities,
+                                );
+                              });
+                            },
+                          );
+                        }),
+                      ],
+                      if (_additionalServices.isNotEmpty) ...[
+                        _buildSectionHeader("Additional Services"),
+                        ..._additionalServices.entries.map((entry) {
+                          final category = entry.key;
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 4, top: 8),
+                                  child: Text(
+                                    category,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey[700],
+                                    ),
                                   ),
                                 ),
-                              ),
-                              ...entry.value.map((item) {
-                                final price = (item["price"] as num?)?.toDouble() ?? 0.0;
-                                final quantity = item["quantity"] ?? 0;
-                                final name = item["name"] ?? "";
-                                final maxQuantity = _dryCleanQuantities[name] ?? 0;
-                                return Card(
-                                  elevation: 0,
-                                  margin: const EdgeInsets.symmetric(vertical: 4),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    side: BorderSide(
-                                      color: Colors.grey[200]!,
-                                      width: 1,
+                                ...entry.value.map((item) {
+                                  final price = (item["price"] as num?)?.toDouble() ?? 0.0;
+                                  final quantity = item["quantity"] ?? 0;
+                                  final name = item["name"] ?? "";
+                                  final maxQuantity = _dryCleanQuantities[name] ?? 0;
+                                  return Card(
+                                    elevation: 0,
+                                    margin: const EdgeInsets.symmetric(vertical: 4),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      side: BorderSide(
+                                        color: Colors.grey[200]!,
+                                        width: 1,
+                                      ),
                                     ),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 50,
-                                          height: 50,
-                                          decoration: BoxDecoration(
-                                            color: Colors.orange[100],
-                                            borderRadius: BorderRadius.circular(12),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 50,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                              color: Colors.orange[100],
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: Icon(
+                                              Icons.add_circle,
+                                              color: Colors.orange[700],
+                                              size: 30,
+                                            ),
                                           ),
-                                          child: Icon(
-                                            Icons.add_circle,
-                                            color: Colors.orange[700],
-                                            size: 30,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                name,
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Colors.grey[800],
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  name,
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.grey[800],
+                                                  ),
                                                 ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                price > 0 ? "₹${price.toStringAsFixed(2)} each" : "Price not available",
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.grey[600],
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  price > 0 ? "₹${price.toStringAsFixed(2)} each" : "Price not available",
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.grey[600],
+                                                  ),
                                                 ),
-                                              ),
-                                              Row(
-                                                children: [
-                                                  IconButton(
-                                                    icon: Container(
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.grey[200],
-                                                        borderRadius: BorderRadius.circular(8),
+                                                Row(
+                                                  children: [
+                                                    IconButton(
+                                                      icon: Container(
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.grey[200],
+                                                          borderRadius: BorderRadius.circular(8),
+                                                        ),
+                                                        padding: const EdgeInsets.all(4),
+                                                        child: const Icon(Icons.remove, size: 18, color: Colors.grey),
                                                       ),
-                                                      padding: const EdgeInsets.all(4),
-                                                      child: const Icon(Icons.remove, size: 18, color: Colors.grey),
-                                                    ),
-                                                    onPressed: () {
-                                                      setState(() {
-                                                        if (quantity > 1) {
-                                                          item["quantity"] = quantity - 1;
-                                                        } else {
-                                                          _additionalServices[category]!.remove(item);
-                                                          if (_additionalServices[category]!.isEmpty) {
-                                                            _additionalServices.remove(category);
+                                                      onPressed: () {
+                                                        setState(() {
+                                                          if (quantity > 1) {
+                                                            item["quantity"] = quantity - 1;
+                                                          } else {
+                                                            _additionalServices[category]!.remove(item);
+                                                            if (_additionalServices[category]!.isEmpty) {
+                                                              _additionalServices.remove(category);
+                                                            }
                                                           }
+                                                          _additionalTotal = _calculateAdditionalTotal();
+                                                          CartPersistence.updateCart(
+                                                            additionalServices: _additionalServices,
+                                                            additionalTotal: _additionalTotal,
+                                                          );
+                                                        });
+                                                      },
+                                                      padding: EdgeInsets.zero,
+                                                      constraints: const BoxConstraints(),
+                                                    ),
+                                                    Padding(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                                                      child: Text(
+                                                        "$quantity",
+                                                        style: TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight: FontWeight.w600,
+                                                          color: Colors.grey[800],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    IconButton(
+                                                      icon: Container(
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.green[100],
+                                                          borderRadius: BorderRadius.circular(8),
+                                                        ),
+                                                        padding: const EdgeInsets.all(4),
+                                                        child: Icon(Icons.add, size: 18, color: Colors.green[700]),
+                                                      ),
+                                                      onPressed: () {
+                                                        if (quantity >= maxQuantity) {
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            SnackBar(
+                                                              content: Text("Cannot exceed Dry Clean quantity ($maxQuantity) for $name"),
+                                                              backgroundColor: Colors.orange,
+                                                              duration: const Duration(seconds: 2),
+                                                            ),
+                                                          );
+                                                          return;
                                                         }
-                                                        _additionalTotal = _calculateAdditionalTotal();
-                                                        CartPersistence.updateCart(
-                                                          additionalServices: _additionalServices,
-                                                          additionalTotal: _additionalTotal,
-                                                        );
-                                                      });
-                                                    },
-                                                    padding: EdgeInsets.zero,
-                                                    constraints: const BoxConstraints(),
-                                                  ),
-                                                  Padding(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                                                    child: Text(
-                                                      "$quantity",
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight: FontWeight.w600,
-                                                        color: Colors.grey[800],
-                                                      ),
+                                                        setState(() {
+                                                          item["quantity"] = quantity + 1;
+                                                          _additionalTotal = _calculateAdditionalTotal();
+                                                          CartPersistence.updateCart(
+                                                            additionalServices: _additionalServices,
+                                                            additionalTotal: _additionalTotal,
+                                                          );
+                                                        });
+                                                      },
+                                                      padding: EdgeInsets.zero,
+                                                      constraints: const BoxConstraints(),
                                                     ),
-                                                  ),
-                                                  IconButton(
-                                                    icon: Container(
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.green[100],
-                                                        borderRadius: BorderRadius.circular(8),
-                                                      ),
-                                                      padding: const EdgeInsets.all(4),
-                                                      child: Icon(Icons.add, size: 18, color: Colors.green[700]),
-                                                    ),
-                                                    onPressed: () {
-                                                      if (quantity >= maxQuantity) {
-                                                        ScaffoldMessenger.of(context).showSnackBar(
-                                                          SnackBar(
-                                                            content: Text("Cannot exceed Dry Clean quantity ($maxQuantity) for $name"),
-                                                            backgroundColor: Colors.orange,
-                                                            duration: const Duration(seconds: 2),
-                                                          ),
-                                                        );
-                                                        return;
-                                                      }
-                                                      setState(() {
-                                                        item["quantity"] = quantity + 1;
-                                                        _additionalTotal = _calculateAdditionalTotal();
-                                                        CartPersistence.updateCart(
-                                                          additionalServices: _additionalServices,
-                                                          additionalTotal: _additionalTotal,
-                                                        );
-                                                      });
-                                                    },
-                                                    padding: EdgeInsets.zero,
-                                                    constraints: const BoxConstraints(),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        IconButton(
-                                          icon: Icon(Icons.delete_outline, size: 22, color: Colors.red[400]),
-                                          onPressed: () {
-                                            setState(() {
-                                              _additionalServices[category]!.remove(item);
-                                              if (_additionalServices[category]!.isEmpty) {
-                                                _additionalServices.remove(category);
-                                              }
-                                              _additionalTotal = _calculateAdditionalTotal();
-                                              CartPersistence.updateCart(
-                                                additionalServices: _additionalServices,
-                                                additionalTotal: _additionalTotal,
-                                              );
-                                            });
-                                          },
-                                          padding: EdgeInsets.zero,
-                                          constraints: const BoxConstraints(),
-                                        ),
-                                      ],
+                                          const SizedBox(width: 8),
+                                          IconButton(
+                                            icon: Icon(Icons.delete_outline, size: 22, color: Colors.red[400]),
+                                            onPressed: () {
+                                              setState(() {
+                                                _additionalServices[category]!.remove(item);
+                                                if (_additionalServices[category]!.isEmpty) {
+                                                  _additionalServices.remove(category);
+                                                }
+                                                _additionalTotal = _calculateAdditionalTotal();
+                                                CartPersistence.updateCart(
+                                                  additionalServices: _additionalServices,
+                                                  additionalTotal: _additionalTotal,
+                                                );
+                                              });
+                                            },
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                );
-                              }),
-                            ],
-                          ),
-                        );
-                      }),
+                                  );
+                                }),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                      const SizedBox(height: 16),
                     ],
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            ),
-            if (showPlaceOrderButton)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, -5),
-                    ),
-                  ],
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16),
                   ),
                 ),
-                child: SafeArea(
-                  child: Column(
-                    children: [
-                      if (total > 0) ...[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Total",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[800],
-                              ),
-                            ),
-                            Text(
-                              "₹${total.toStringAsFixed(2)}",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: constants.bgColorPink,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                      ],
-                      if (_isOnlyRegularWash()) ...[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Regular Wash Price",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey[800],
-                              ),
-                            ),
-                            Text(
-                              "₹${_regularWashPrice.toStringAsFixed(2)} /KG",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            setState(() => _isOrderLoading = true);
-                            await _navigateToCheckout();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: constants.bgColorPink,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            elevation: 0,
-                          ),
-                          child: const Text(
-                            "Place Order",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+              ),
+              if (showPlaceOrderButton)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, -5),
                       ),
                     ],
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                  ),
+                  child: SafeArea(
+                    child: Column(
+                      children: [
+                        if (total > 0) ...[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Total",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey[800],
+                                ),
+                              ),
+                              Text(
+                                "₹${total.toStringAsFixed(2)}",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: constants.bgColorPink,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                        if (_isOnlyRegularWash()) ...[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Regular Wash Price",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[800],
+                                ),
+                              ),
+                              Text(
+                                "₹${_regularWashPrice.toStringAsFixed(2)} /KG",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              setState(() => _isOrderLoading = true);
+                              await _navigateToCheckout();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: constants.bgColorPink,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              "Place Order",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

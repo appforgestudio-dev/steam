@@ -71,30 +71,33 @@ class _EditMeasurementsPageState extends State<EditMeasurementsPage> {
       ),
     );
 
-    // Go back to the previous page
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Your Measurements', style: TextStyle(color: Colors.white)),
-        backgroundColor: bgColorPink,
-        iconTheme: const IconThemeData(color: Colors.white), // Makes back button white
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth > 600) { // Web layout
-            return Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 500),
-                child: _buildForm(),
-              ),
-            );
-          }
-          return _buildForm(); // Mobile layout
-        },
+    return Title(
+      title: 'V12 Laundry | Edit',
+      color: bgColorPink,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Edit Your Measurements', style: TextStyle(color: Colors.white)),
+          backgroundColor: bgColorPink,
+          iconTheme: const IconThemeData(color: Colors.white),
+        ),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth > 600) {
+              return Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: _buildForm(),
+                ),
+              );
+            }
+            return _buildForm(); // Mobile layout
+          },
+        ),
       ),
     );
   }

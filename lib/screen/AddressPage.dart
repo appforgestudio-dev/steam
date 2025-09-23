@@ -2288,111 +2288,69 @@ class _AddressPageState extends State<AddressPage> {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Add Delivery Address", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18, letterSpacing: 0.3)),
-        centerTitle: true,
-        leading: IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.arrow_back_ios, size: 20)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SearchLocationPage(
-                    onLocationSelected: (latLng) async {
-                      _setMarker(latLng);
-                      if (_mapController != null) {
-                        await _mapController!.animateCamera(CameraUpdate.newLatLngZoom(latLng, 15));
-                      }
-                      await _getAddressFromLatLng(latLng);
-                      Navigator.pop(context);
-                    },
+    return Title(
+      title: 'V12 Laundry | Add Delivery Address',
+      color: bgColorPink,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Add Delivery Address", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18, letterSpacing: 0.3)),
+          centerTitle: true,
+          leading: IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.arrow_back_ios, size: 20)),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SearchLocationPage(
+                      onLocationSelected: (latLng) async {
+                        _setMarker(latLng);
+                        if (_mapController != null) {
+                          await _mapController!.animateCamera(CameraUpdate.newLatLngZoom(latLng, 15));
+                        }
+                        await _getAddressFromLatLng(latLng);
+                        Navigator.pop(context);
+                      },
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-        ],
-        elevation: 0,
-        backgroundColor: bgColorPink,
-        foregroundColor: Colors.white,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(12))),
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          double mapHeight = isWeb ? 0 : screenHeight * 0.43;
-          double maxMapWidth = isWeb ? 0 : screenWidth;
-          String StFa = isWeb ? "Address (Street Name / Society, Area,)" : "Street Name / Society";
-          return _isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.pink, strokeWidth: 2.5))
-              : _isOutsideServiceArea
-              ? _buildOutsideAreaWidget()
-              : isWeb
-              ? Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                );
+              },
             ),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("ADDRESS DETAILS", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey[600], letterSpacing: 0.5)),
-                  const SizedBox(height: 16),
-                  Text("Door / Flat Number", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[800])),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _doorNumberController,
-                    decoration: InputDecoration(
-                      hintText: "e.g., 12A, Flat 301",
-                      hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: bgColorPink, width: 1.5)),
-                      filled: true,
-                      fillColor: Colors.white,
-                    ),
-                    style: const TextStyle(fontSize: 14, color: Colors.black87),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(StFa, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[800])),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _streetNameController,
-                    decoration: InputDecoration(
-                      hintText: "e.g., Main Street, Palm Gardens",
-                      hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: bgColorPink, width: 1.5)),
-                      filled: true,
-                      fillColor: Colors.white,
-                    ),
-                    style: const TextStyle(fontSize: 14, color: Colors.black87),
-                  ),
-                  const SizedBox(height: 20),
-                  Text("SAVE ADDRESS AS", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey[600], letterSpacing: 0.5)),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(child: _buildLabelChip('Home', Icons.home)),
-                      const SizedBox(width: 8),
-                      Expanded(child: _buildLabelChip('Work', Icons.work)),
-                      const SizedBox(width: 8),
-                      Expanded(child: _buildLabelChip('Other', Icons.category)),
-                    ],
-                  ),
-                  if (_selectedLabel == 'Other') ...[
-                    const SizedBox(height: 12),
+          ],
+          elevation: 0,
+          backgroundColor: bgColorPink,
+          foregroundColor: Colors.white,
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(12))),
+        ),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            double mapHeight = isWeb ? 0 : screenHeight * 0.43;
+            double maxMapWidth = isWeb ? 0 : screenWidth;
+            String StFa = isWeb ? "Address (Street Name / Society, Area,)" : "Street Name / Society";
+            return _isLoading
+                ? const Center(child: CircularProgressIndicator(color: Colors.pink, strokeWidth: 2.5))
+                : _isOutsideServiceArea
+                ? _buildOutsideAreaWidget()
+                : isWeb
+                ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("ADDRESS DETAILS", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey[600], letterSpacing: 0.5)),
+                    const SizedBox(height: 16),
+                    Text("Door / Flat Number", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[800])),
+                    const SizedBox(height: 8),
                     TextField(
-                      controller: _customLabelController,
+                      controller: _doorNumberController,
                       decoration: InputDecoration(
-                        hintText: "Enter custom label",
+                        hintText: "e.g., 12A, Flat 301",
                         hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
@@ -2400,164 +2358,164 @@ class _AddressPageState extends State<AddressPage> {
                         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: bgColorPink, width: 1.5)),
                         filled: true,
                         fillColor: Colors.white,
-                        prefixIcon: Icon(Icons.label, size: 20, color: Colors.grey[600]),
                       ),
                       style: const TextStyle(fontSize: 14, color: Colors.black87),
                     ),
-                  ],
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _saveAddress,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: bgColorPink,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        elevation: 0,
-                        shadowColor: Colors.transparent,
+                    const SizedBox(height: 16),
+                    Text(StFa, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[800])),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _streetNameController,
+                      decoration: InputDecoration(
+                        hintText: "e.g., Main Street, Palm Gardens",
+                        hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: bgColorPink, width: 1.5)),
+                        filled: true,
+                        fillColor: Colors.white,
                       ),
-                      child: const Text("SAVE ADDRESS", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
+                      style: const TextStyle(fontSize: 14, color: Colors.black87),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-              ),
-            ),
-          )
-              : Column(
-            children: [
-              SizedBox(
-                height: mapHeight,
-                width: maxMapWidth,
-                child: Stack(
-                  children: [
-                    GoogleMap(
-                      onMapCreated: _onMapCreated,
-                      initialCameraPosition: _initialCameraPosition,
-                      markers: _markers,
-                      onTap: _onTapMap,
-                      myLocationEnabled: true,
-                      myLocationButtonEnabled: false,
-                      zoomControlsEnabled: false,
-                      mapToolbarEnabled: false,
-                      minMaxZoomPreference: const MinMaxZoomPreference(10, 18),
+                    const SizedBox(height: 20),
+                    Text("SAVE ADDRESS AS", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey[600], letterSpacing: 0.5)),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(child: _buildLabelChip('Home', Icons.home)),
+                        const SizedBox(width: 8),
+                        Expanded(child: _buildLabelChip('Work', Icons.work)),
+                        const SizedBox(width: 8),
+                        Expanded(child: _buildLabelChip('Other', Icons.category)),
+                      ],
                     ),
-                    Positioned(
-                      top: 16,
-                      left: 16,
-                      right: 16,
-                      child: Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          child: Text(
-                            _addressController.text.isNotEmpty ? _addressController.text : "Tap on map to select location",
-                            style: TextStyle(fontSize: 13, color: Colors.grey[800]),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                    if (_selectedLabel == 'Other') ...[
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _customLabelController,
+                        decoration: InputDecoration(
+                          hintText: "Enter custom label",
+                          hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
+                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: bgColorPink, width: 1.5)),
+                          filled: true,
+                          fillColor: Colors.white,
+                          prefixIcon: Icon(Icons.label, size: 20, color: Colors.grey[600]),
                         ),
+                        style: const TextStyle(fontSize: 14, color: Colors.black87),
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _saveAddress,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: bgColorPink,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                        ),
+                        child: const Text("SAVE ADDRESS", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
                       ),
                     ),
-                    Positioned(
-                      bottom: 16,
-                      right: 16,
-                      child: Column(
-                        children: [
-                          FloatingActionButton.small(
-                            onPressed: _getCurrentLocation,
-                            backgroundColor: Colors.white,
-                            elevation: 2,
-                            child: const Icon(Icons.my_location, color: bgColorPink, size: 20),
-                          ),
-                          const SizedBox(height: 8),
-                          FloatingActionButton.small(
-                            onPressed: () {
-                              if (_selectedLatLn != null) {
-                                _mapController?.animateCamera(CameraUpdate.newLatLngZoom(_selectedLatLn!, 18));
-                              }
-                            },
-                            backgroundColor: Colors.white,
-                            elevation: 2,
-                            child: const Icon(Icons.zoom_in, color: bgColorPink, size: 20),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (_isGeocoding)
-                      const Positioned.fill(
-                        child: Center(child: CircularProgressIndicator(color: Colors.pink, strokeWidth: 2.5)),
-                      ),
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                  ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("ADDRESS DETAILS", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey[600], letterSpacing: 0.5)),
-                        const SizedBox(height: 16),
-                        Text("Door / Flat Number", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[800])),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: _doorNumberController,
-                          decoration: InputDecoration(
-                            hintText: "e.g., 12A, Flat 301",
-                            hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
-                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: bgColorPink, width: 1.5)),
-                            filled: true,
-                            fillColor: Colors.white,
+            )
+                : Column(
+              children: [
+                SizedBox(
+                  height: mapHeight,
+                  width: maxMapWidth,
+                  child: Stack(
+                    children: [
+                      GoogleMap(
+                        onMapCreated: _onMapCreated,
+                        initialCameraPosition: _initialCameraPosition,
+                        markers: _markers,
+                        onTap: _onTapMap,
+                        myLocationEnabled: true,
+                        myLocationButtonEnabled: false,
+                        zoomControlsEnabled: false,
+                        mapToolbarEnabled: false,
+                        minMaxZoomPreference: const MinMaxZoomPreference(10, 18),
+                      ),
+                      Positioned(
+                        top: 16,
+                        left: 16,
+                        right: 16,
+                        child: Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            child: Text(
+                              _addressController.text.isNotEmpty ? _addressController.text : "Tap on map to select location",
+                              style: TextStyle(fontSize: 13, color: Colors.grey[800]),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          style: const TextStyle(fontSize: 14, color: Colors.black87),
                         ),
-                        const SizedBox(height: 16),
-                        Text("Street Name / Society", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[800])),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: _streetNameController,
-                          decoration: InputDecoration(
-                            hintText: "e.g., Main Street, Palm Gardens",
-                            hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
-                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: bgColorPink, width: 1.5)),
-                            filled: true,
-                            fillColor: Colors.white,
-                          ),
-                          style: const TextStyle(fontSize: 14, color: Colors.black87),
-                        ),
-                        const SizedBox(height: 20),
-                        Text("SAVE ADDRESS AS", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey[600], letterSpacing: 0.5)),
-                        const SizedBox(height: 12),
-                        Row(
+                      ),
+                      Positioned(
+                        bottom: 16,
+                        right: 16,
+                        child: Column(
                           children: [
-                            Expanded(child: _buildLabelChip('Home', Icons.home)),
-                            const SizedBox(width: 8),
-                            Expanded(child: _buildLabelChip('Work', Icons.work)),
-                            const SizedBox(width: 8),
-                            Expanded(child: _buildLabelChip('Other', Icons.category)),
+                            FloatingActionButton.small(
+                              onPressed: _getCurrentLocation,
+                              backgroundColor: Colors.white,
+                              elevation: 2,
+                              child: const Icon(Icons.my_location, color: bgColorPink, size: 20),
+                            ),
+                            const SizedBox(height: 8),
+                            FloatingActionButton.small(
+                              onPressed: () {
+                                if (_selectedLatLn != null) {
+                                  _mapController?.animateCamera(CameraUpdate.newLatLngZoom(_selectedLatLn!, 18));
+                                }
+                              },
+                              backgroundColor: Colors.white,
+                              elevation: 2,
+                              child: const Icon(Icons.zoom_in, color: bgColorPink, size: 20),
+                            ),
                           ],
                         ),
-                        if (_selectedLabel == 'Other') ...[
-                          const SizedBox(height: 12),
+                      ),
+                      if (_isGeocoding)
+                        const Positioned.fill(
+                          child: Center(child: CircularProgressIndicator(color: Colors.pink, strokeWidth: 2.5)),
+                        ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                    ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("ADDRESS DETAILS", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey[600], letterSpacing: 0.5)),
+                          const SizedBox(height: 16),
+                          Text("Door / Flat Number", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[800])),
+                          const SizedBox(height: 8),
                           TextField(
-                            controller: _customLabelController,
+                            controller: _doorNumberController,
                             decoration: InputDecoration(
-                              hintText: "Enter custom label",
+                              hintText: "e.g., 12A, Flat 301",
                               hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
@@ -2565,36 +2523,82 @@ class _AddressPageState extends State<AddressPage> {
                               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: bgColorPink, width: 1.5)),
                               filled: true,
                               fillColor: Colors.white,
-                              prefixIcon: Icon(Icons.label, size: 20, color: Colors.grey[600]),
                             ),
                             style: const TextStyle(fontSize: 14, color: Colors.black87),
                           ),
-                        ],
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _saveAddress,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: bgColorPink,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              elevation: 0,
-                              shadowColor: Colors.transparent,
+                          const SizedBox(height: 16),
+                          Text("Street Name / Society", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[800])),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: _streetNameController,
+                            decoration: InputDecoration(
+                              hintText: "e.g., Main Street, Palm Gardens",
+                              hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: bgColorPink, width: 1.5)),
+                              filled: true,
+                              fillColor: Colors.white,
                             ),
-                            child: const Text("SAVE ADDRESS", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
+                            style: const TextStyle(fontSize: 14, color: Colors.black87),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                      ],
+                          const SizedBox(height: 20),
+                          Text("SAVE ADDRESS AS", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey[600], letterSpacing: 0.5)),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(child: _buildLabelChip('Home', Icons.home)),
+                              const SizedBox(width: 8),
+                              Expanded(child: _buildLabelChip('Work', Icons.work)),
+                              const SizedBox(width: 8),
+                              Expanded(child: _buildLabelChip('Other', Icons.category)),
+                            ],
+                          ),
+                          if (_selectedLabel == 'Other') ...[
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: _customLabelController,
+                              decoration: InputDecoration(
+                                hintText: "Enter custom label",
+                                hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
+                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400, width: 1)),
+                                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: bgColorPink, width: 1.5)),
+                                filled: true,
+                                fillColor: Colors.white,
+                                prefixIcon: Icon(Icons.label, size: 20, color: Colors.grey[600]),
+                              ),
+                              style: const TextStyle(fontSize: 14, color: Colors.black87),
+                            ),
+                          ],
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _saveAddress,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: bgColorPink,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                elevation: 0,
+                                shadowColor: Colors.transparent,
+                              ),
+                              child: const Text("SAVE ADDRESS", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
