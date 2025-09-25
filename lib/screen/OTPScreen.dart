@@ -510,7 +510,6 @@ class _OtpPageState extends State<OtpPage> with CodeAutoFill {
     }
   }
 
-  // This is called when the SMS is received with the user's consent
   @override
   void codeUpdated() {
     setState(() {
@@ -563,23 +562,87 @@ class _OtpPageState extends State<OtpPage> with CodeAutoFill {
     }
   }
 
+  // Future<void> _handleUserDataAndNavigation() async {
+  //   final userDocRef = FirebaseFirestore.instance.collection('users').doc(widget.phoneNumber);
+  //   final userDoc = await userDocRef.get();
+  //
+  //   if (userDoc.exists && (userDoc.data()?['name'] as String?)?.isNotEmpty == true) {
+  //     _navigateToHomePage();
+  //   } else {
+  //     setState(() {
+  //       _showNameInput = true;
+  //       isLoading = false;
+  //     });
+  //   }
+  // }
+  //
+  // Future<void> _saveUserName() async {
+  //   if (nameController.text.trim().isEmpty) {
+  //     _showSnackBar("Please enter your name.", isError: true);
+  //     return;
+  //   }
+  //
+  //   setState(() {
+  //     isLoading = true;
+  //   });
+  //
+  //   try {
+  //     final userDocRef = FirebaseFirestore.instance.collection('users').doc(widget.phoneNumber);
+  //
+  //     await userDocRef.set(
+  //       {'name': nameController.text.trim()},
+  //       SetOptions(merge: true),
+  //     );
+  //
+  //     _navigateToHomePage();
+  //   } catch (e) {
+  //     _showSnackBar("Failed to save name: ${e.toString()}", isError: true);
+  //   } finally {
+  //     setState(() {
+  //       isLoading = false;
+  //     });
+  //   }
+  // }
+  //
+  // void _navigateToHomePage() {
+  //   Navigator.pushAndRemoveUntil(
+  //     context,
+  //     MaterialPageRoute(builder: (context) => const HomePage()),
+  //         (Route<dynamic> route) => false,
+  //   );
+  // }
+
   Future<void> _handleUserDataAndNavigation() async {
     final userDocRef = FirebaseFirestore.instance.collection('users').doc(widget.phoneNumber);
-    final userDoc = await userDocRef.get();
+    try {
+      final userDoc = await userDocRef.get();
 
-    if (userDoc.exists && (userDoc.data()?['name'] as String?)?.isNotEmpty == true) {
-      _navigateToHomePage();
-    } else {
+      final userData = userDoc.data();
+      final name = userData != null && userData.containsKey('name')
+          ? (userData['name'] as String?)?.trim()
+          : null;
+
+      if (userDoc.exists && name != null && name.isNotEmpty) {
+        _navigateToHomePage();
+      } else {
+        setState(() {
+          _showNameInput = true;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      _showSnackBar("Error checking user data: ${e.toString()}", isError: true);
       setState(() {
-        _showNameInput = true;
         isLoading = false;
+        _showNameInput = true;
       });
     }
   }
 
   Future<void> _saveUserName() async {
-    if (nameController.text.trim().isEmpty) {
-      _showSnackBar("Please enter your name.", isError: true);
+    final trimmedName = nameController.text.trim();
+    if (trimmedName.isEmpty) {
+      _showSnackBar("Please enter a valid name.", isError: true);
       return;
     }
 
@@ -591,14 +654,19 @@ class _OtpPageState extends State<OtpPage> with CodeAutoFill {
       final userDocRef = FirebaseFirestore.instance.collection('users').doc(widget.phoneNumber);
 
       await userDocRef.set(
-        {'name': nameController.text.trim()},
+        {'name': trimmedName},
         SetOptions(merge: true),
       );
+
+      final userDoc = await userDocRef.get();
+      final savedName = userDoc.data()?['name'] as String?;
+      if (savedName == null || savedName.trim().isEmpty) {
+        throw Exception("Failed to verify saved name in Firestore");
+      }
 
       _navigateToHomePage();
     } catch (e) {
       _showSnackBar("Failed to save name: ${e.toString()}", isError: true);
-    } finally {
       setState(() {
         isLoading = false;
       });
@@ -606,11 +674,13 @@ class _OtpPageState extends State<OtpPage> with CodeAutoFill {
   }
 
   void _navigateToHomePage() {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const HomePage()),
-          (Route<dynamic> route) => false,
-    );
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+            (Route<dynamic> route) => false,
+      );
+    }
   }
 
   void _showSnackBar(String message, {bool isError = false}) {

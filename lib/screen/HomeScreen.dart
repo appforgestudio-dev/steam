@@ -3700,10 +3700,10 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _requestNotificationPermission();
     _initializePage();
     _authSubscription = FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user != null) {
-        // A user is logged in, so we can get their FCM token
         print("User is logged in, setting up FCM token...");
         _setupAndSaveFCMToken(user);
       } else {
@@ -3723,10 +3723,34 @@ class _HomePageState extends State<HomePage> {
         _updateCartItemCount(),
       ]);
     }
-
     if (_currentAddress == null && !HomePage.hasShownInitialAddressPrompt && mounted) {
       HomePage.hasShownInitialAddressPrompt = true;
       _showAddressSelectionSheet(onAddressChanged: _loadCurrentAddress);
+    }
+  }
+
+
+  Future<void> _requestNotificationPermission() async {
+    if (kIsWeb) return;
+
+    final messaging = FirebaseMessaging.instance;
+
+    final settings = await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print('✅ Notification Permission granted.');
+    } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+      print('User granted provisional notification permission.');
+    } else {
+      print('❌ User declined or has not accepted notification permission.');
     }
   }
 
@@ -3739,7 +3763,6 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _setupAndSaveFCMToken(User user) async {
     try {
-      // For web, we need a VAPID key. For mobile, this is not needed.
       final fcmToken = await FirebaseMessaging.instance.getToken(
         vapidKey: kIsWeb ? "BAEu6_xp-409KcIzsYi7LmiOAMqMDeL20885I1kILS2zN19IxJFoEraUxgbsTGJsPtiHhK3cG3j3HfPfRXhRkCc" : null,
       );
@@ -3747,18 +3770,16 @@ class _HomePageState extends State<HomePage> {
       if (fcmToken != null) {
         print("✅ FCM Token: $fcmToken");
 
-        // Use the user's UID for the document ID - THIS IS THE FIX
         final userDocRef = FirebaseFirestore.instance.collection('users').doc(user.phoneNumber);
 
         await userDocRef.set(
           {
             'fcmToken': fcmToken,
-            'phoneNumber': user.phoneNumber, // Still save the phone number as a field
+            'phoneNumber': user.phoneNumber,
             'updatedAt': FieldValue.serverTimestamp(),
           },
           SetOptions(merge: true),
         );
-        print("✅ FCM Token saved for user: ${user.uid}");
       } else {
         print("❌ FCM TOKEN IS NULL. Check your VAPID key and Firebase setup.");
       }
