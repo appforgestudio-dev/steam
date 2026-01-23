@@ -191,6 +191,8 @@ class _AddressPageState extends State<AddressPage> {
       'doorNumber': _doorNumberController.text.trim(),
       'streetName': _streetNameController.text.trim(),
       'label': finalLabel,
+      'latitude':     _selectedLatLn!.latitude,
+      'longitude':    _selectedLatLn!.longitude,
     };
 
     await AddressPersistence.saveOrUpdateAddress(addressData);
