@@ -882,6 +882,8 @@
 // }
 
 ///////////////////////////////////
+library;
+
 
 // import 'package:flutter/material.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
@@ -2431,9 +2433,9 @@ class _AdditionalServiceState extends State<AdditionalService> {
     totalItems += (savedCart['washAndIronItems'] as Map<String, dynamic>? ?? {}).values.fold<int>(0, (sum, quantity) => sum + (quantity as int? ?? 0));
     totalItems += (savedCart['washIronStarchItems'] as Map<String, dynamic>? ?? {}).values.fold<int>(0, (sum, quantity) => sum + (quantity as int? ?? 0));
     final prePlatedItemsFromCart = (savedCart['prePlatedItems'] as Map<String, dynamic>? ?? {});
-    prePlatedItemsFromCart.values.forEach((itemData) {
+    for (var itemData in prePlatedItemsFromCart.values) {
       totalItems += (itemData?["quantity"] as int? ?? 0);
-    });
+    }
     final additionalServicesFromCart = (savedCart['additionalServices'] as Map<String, dynamic>? ?? {});
     additionalServicesFromCart.forEach((key, items) {
       if (items is List) {
@@ -2593,8 +2595,9 @@ class _AdditionalServiceState extends State<AdditionalService> {
   void _removeItem(String itemName, String service) {
     setState(() {
       List<Map<String, dynamic>>? targetList;
-      if (service == "Starch") targetList = starchingItems;
-      else if (service == "Saree Pre-Pleat") targetList = prePlatedItems;
+      if (service == "Starch") {
+        targetList = starchingItems;
+      } else if (service == "Saree Pre-Pleat") targetList = prePlatedItems;
 
       if (targetList != null) {
         var itemIndex = targetList.indexWhere((item) => item["name"] == itemName);
@@ -2620,17 +2623,16 @@ class _AdditionalServiceState extends State<AdditionalService> {
         return;
       }
       List<Map<String, dynamic>>? targetList;
-      if (service == "Starch") targetList = starchingItems;
-      else if (service == "Saree Pre-Pleat") targetList = prePlatedItems;
+      if (service == "Starch") {
+        targetList = starchingItems;
+      } else if (service == "Saree Pre-Pleat") targetList = prePlatedItems;
       else return;
 
-      if (targetList != null) {
-        var itemIndex = targetList.indexWhere((item) => item["name"] == itemName);
-        if (itemIndex != -1) {
-          targetList[itemIndex]["quantity"] = newQuantity.clamp(0, maxQuantity);
-        }
+      var itemIndex = targetList.indexWhere((item) => item["name"] == itemName);
+      if (itemIndex != -1) {
+        targetList[itemIndex]["quantity"] = newQuantity.clamp(0, maxQuantity);
       }
-    });
+        });
     _saveSelections();
   }
 
@@ -2784,8 +2786,9 @@ class _AdditionalServiceState extends State<AdditionalService> {
                                         icon: Icon(isExpanded ? Icons.expand_less : Icons.expand_more, color: Colors.grey[600],),
                                         onPressed: () {
                                           setState(() {
-                                            if (isStarching) isStarchingExpanded = !isStarchingExpanded;
-                                            else if (isSareePrePleat) isPrePlatedExpanded = !isPrePlatedExpanded;
+                                            if (isStarching) {
+                                              isStarchingExpanded = !isStarchingExpanded;
+                                            } else if (isSareePrePleat) isPrePlatedExpanded = !isPrePlatedExpanded;
                                           });
                                         },
                                       ),
@@ -2871,8 +2874,9 @@ class _AdditionalServiceState extends State<AdditionalService> {
                                             icon: Icon(isExpanded ? Icons.expand_less : Icons.expand_more, color: Colors.grey[600],),
                                             onPressed: () {
                                               setState(() {
-                                                if (isStarching) isStarchingExpanded = !isStarchingExpanded;
-                                                else if (isSareePrePleat) isPrePlatedExpanded = !isPrePlatedExpanded;
+                                                if (isStarching) {
+                                                  isStarchingExpanded = !isStarchingExpanded;
+                                                } else if (isSareePrePleat) isPrePlatedExpanded = !isPrePlatedExpanded;
                                               });
                                             },
                                           ),

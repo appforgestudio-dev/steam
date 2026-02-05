@@ -376,7 +376,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
 
   Widget _buildCategoryDropdown() {
     return DropdownButtonFormField<String>(
-      value: _selectedCategory,
+      initialValue: _selectedCategory,
       decoration: const InputDecoration(
         labelText: "Feedback Category",
         border: OutlineInputBorder(),

@@ -1088,7 +1088,7 @@ class _CartPageState extends State<CartPage> {
 
         _washAndFoldPrices = [];
         if (washFoldResults.isNotEmpty && washFoldResults[0].exists) {
-          final data = washFoldResults[0].data() as Map<String, dynamic>? ?? {};
+          final data = washFoldResults[0].data() ?? {};
           _washAndFoldPrices.add({
             "label": "By Weight: Regular Wash",
             "price": (data["price"] as num?)?.toDouble() ?? 0.0,
@@ -1102,7 +1102,7 @@ class _CartPageState extends State<CartPage> {
           });
         }
         if (washFoldResults.length > 1 && washFoldResults[1].exists) {
-          final data = washFoldResults[1].data() as Map<String, dynamic>? ?? {};
+          final data = washFoldResults[1].data() ?? {};
           _washAndFoldPrices.addAll([
             {
               "label": "One-Time: 3kg Regular Wash",
@@ -1129,7 +1129,7 @@ class _CartPageState extends State<CartPage> {
         final subscriptionTimes = {2: 7, 3: 15, 4: 30};
         for (int i = 2; i < washFoldResults.length; i++) {
           if (washFoldResults[i].exists) {
-            final data = washFoldResults[i].data() as Map<String, dynamic>? ?? {};
+            final data = washFoldResults[i].data() ?? {};
             final times = subscriptionTimes[i] ?? 0;
             if (times > 0) {
               _washAndFoldPrices.addAll([
@@ -1168,7 +1168,7 @@ class _CartPageState extends State<CartPage> {
 
         _washAndIronPrices = [];
         if (washIronResults.isNotEmpty && washIronResults[0].exists) {
-          final data = washIronResults[0].data() as Map<String, dynamic>? ?? {};
+          final data = washIronResults[0].data() ?? {};
           _washAndIronPrices.add({
             "label": "By Weight: Regular Wash",
             "price": (data["price"] as num?)?.toDouble() ?? 0.0,
@@ -1182,7 +1182,7 @@ class _CartPageState extends State<CartPage> {
           });
         }
         if (washIronResults.length > 1 && washIronResults[1].exists) {
-          final data = washIronResults[1].data() as Map<String, dynamic>? ?? {};
+          final data = washIronResults[1].data() ?? {};
           _washAndIronPrices.addAll([
             {
               "label": "One-Time: 3kg Regular Wash",
@@ -1208,7 +1208,7 @@ class _CartPageState extends State<CartPage> {
         }
         for (int i = 2; i < washIronResults.length; i++) {
           if (washIronResults[i].exists) {
-            final data = washIronResults[i].data() as Map<String, dynamic>? ?? {};
+            final data = washIronResults[i].data() ?? {};
             final times = subscriptionTimes[i] ?? 0;
             if (times > 0) {
               _washAndIronPrices.addAll([
@@ -1247,7 +1247,7 @@ class _CartPageState extends State<CartPage> {
 
         _washIronStarchPrices = [];
         if (washStarchResults.isNotEmpty && washStarchResults[0].exists) {
-          final data = washStarchResults[0].data() as Map<String, dynamic>? ?? {};
+          final data = washStarchResults[0].data() ?? {};
           _washIronStarchPrices.add({
             "label": "By Weight: Regular Wash",
             "price": (data["price"] as num?)?.toDouble() ?? 0.0,
@@ -1256,7 +1256,7 @@ class _CartPageState extends State<CartPage> {
           if (_regularWashPrice == 0) _regularWashPrice = (data["price"] as num?)?.toDouble() ?? 0.0;
         }
         if (washStarchResults.length > 1 && washStarchResults[1].exists) {
-          final data = washStarchResults[1].data() as Map<String, dynamic>? ?? {};
+          final data = washStarchResults[1].data() ?? {};
           _washIronStarchPrices.addAll([
             {
               "label": "One-Time: 3kg Regular Wash",
@@ -1282,7 +1282,7 @@ class _CartPageState extends State<CartPage> {
         }
         for (int i = 2; i < washStarchResults.length; i++) {
           if (washStarchResults[i].exists) {
-            final data = washStarchResults[i].data() as Map<String, dynamic>? ?? {};
+            final data = washStarchResults[i].data() ?? {};
             final times = subscriptionTimes[i] ?? 0;
             if (times > 0) {
               _washIronStarchPrices.addAll([

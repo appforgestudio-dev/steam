@@ -714,9 +714,9 @@ class _IroningPriceListPageState extends State<IroningPriceListPage> {
 
     // Sum quantities from pre-plated items
     final prePlatedItemsFromCart = (savedCart['prePlatedItems'] as Map<String, dynamic>? ?? {});
-    prePlatedItemsFromCart.values.forEach((itemData) {
+    for (var itemData in prePlatedItemsFromCart.values) {
       totalItems += (itemData?["quantity"] as int? ?? 0);
-    });
+    }
 
     // Sum quantities from additional services
     final additionalServicesFromCart = (savedCart['additionalServices'] as Map<String, dynamic>? ?? {});

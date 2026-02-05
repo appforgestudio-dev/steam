@@ -11,6 +11,8 @@
 // }
 
 //////////////////////////////////////////////////////////
+library;
+
 
 
 // import 'package:flutter/material.dart';
@@ -1253,9 +1255,9 @@ class _DryCleanPriceListPageState extends State<DryCleanPriceListPage> {
     totalItems += (savedCart['washAndIronItems'] as Map<String, dynamic>? ?? {}).values.fold<int>(0, (sum, quantity) => sum + (quantity as int? ?? 0));
     totalItems += (savedCart['washIronStarchItems'] as Map<String, dynamic>? ?? {}).values.fold<int>(0, (sum, quantity) => sum + (quantity as int? ?? 0));
     final prePlatedItemsFromCart = (savedCart['prePlatedItems'] as Map<String, dynamic>? ?? {});
-    prePlatedItemsFromCart.values.forEach((itemData) {
+    for (var itemData in prePlatedItemsFromCart.values) {
       totalItems += (itemData?["quantity"] as int? ?? 0);
-    });
+    }
     final additionalServicesFromCart = (savedCart['additionalServices'] as Map<String, dynamic>? ?? {});
     additionalServicesFromCart.forEach((key, items) {
       if (items is List) {

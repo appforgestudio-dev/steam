@@ -190,6 +190,8 @@ class _AddressPageState extends State<AddressPage> {
       'street': _streetNameController.text.trim(),
       'doorNumber': _doorNumberController.text.trim(),
       'streetName': _streetNameController.text.trim(),
+      'latitude': _selectedLatLn!.latitude,
+      'longitude': _selectedLatLn!.longitude,
       'label': finalLabel,
     };
 

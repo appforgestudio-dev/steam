@@ -460,7 +460,7 @@ class CartPersistence {
 
       print("Order $orderId saved successfully at 01:08 PM IST on June 20, 2025: $orderData");
       return orderId;
-    } catch (e, stackTrace) {
+    } catch (e) {
       print("Error saving order at 01:08 PM IST on June 20, 2025: $e");
       throw Exception("Failed to save order: $e");
     }
@@ -518,7 +518,7 @@ class CartPersistence {
 
       print("Subscription order $orderId saved successfully at 01:08 PM IST on June 20, 2025: $orderData");
       return orderId;
-    } catch (e, stackTrace) {
+    } catch (e) {
       print("Error saving subscription order at 01:08 PM IST on June 20, 2025: $e");
       throw Exception("Failed to save subscription order: $e");
     }

@@ -4879,7 +4879,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    ...premiumServices.map((service) => Container(
+                    ...premiumServices.map((service) => SizedBox(
                       width: 500,
                       child: _buildPremiumCard(service, context),
                     )),

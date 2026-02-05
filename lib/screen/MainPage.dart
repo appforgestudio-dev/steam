@@ -228,7 +228,7 @@ class MainPage extends StatelessWidget {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            Container(
+            SizedBox(
               height: 450,
               child: Stack(
                 children: [

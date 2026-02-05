@@ -2150,17 +2150,17 @@ class _PrePlatedPageState extends State<PrePlatedPage> {
 
       setState(() {
         dryCleanItemPrices = {
-          "Saree Fancy": (sareeFancyDoc.data() as Map<String, dynamic>?)?["dry_clean"]?.toDouble() ?? 0.0,
-          "Saree Medium": (sareeMediumDoc.data() as Map<String, dynamic>?)?["dry_clean"]?.toDouble() ?? 0.0,
-          "Saree Heavy": (sareeHeavyDoc.data() as Map<String, dynamic>?)?["dry_clean"]?.toDouble() ?? 0.0,
-          "Saree Plain": (sareePlainDoc.data() as Map<String, dynamic>?)?["dry_clean"]?.toDouble() ?? 0.0,
+          "Saree Fancy": (sareeFancyDoc.data())?["dry_clean"]?.toDouble() ?? 0.0,
+          "Saree Medium": (sareeMediumDoc.data())?["dry_clean"]?.toDouble() ?? 0.0,
+          "Saree Heavy": (sareeHeavyDoc.data())?["dry_clean"]?.toDouble() ?? 0.0,
+          "Saree Plain": (sareePlainDoc.data())?["dry_clean"]?.toDouble() ?? 0.0,
         };
-        commonDryCleanStarchPrice = (dryCleanPrePlateDoc.data() as Map<String, dynamic>?)?["starch"]?.toDouble() ?? 0.0;
+        commonDryCleanStarchPrice = (dryCleanPrePlateDoc.data())?["starch"]?.toDouble() ?? 0.0;
         dryCleanCalculatedTotals = {
-          "Saree Fancy": (dryCleanPrePlateDoc.data() as Map<String, dynamic>?)?["fancy"]?.toDouble() ?? 0.0,
-          "Saree Medium": (dryCleanPrePlateDoc.data() as Map<String, dynamic>?)?["medium"]?.toDouble() ?? 0.0,
-          "Saree Heavy": (dryCleanPrePlateDoc.data() as Map<String, dynamic>?)?["heavy"]?.toDouble() ?? 0.0,
-          "Saree Plain": (dryCleanPrePlateDoc.data() as Map<String, dynamic>?)?["plain"]?.toDouble() ?? 0.0,
+          "Saree Fancy": (dryCleanPrePlateDoc.data())?["fancy"]?.toDouble() ?? 0.0,
+          "Saree Medium": (dryCleanPrePlateDoc.data())?["medium"]?.toDouble() ?? 0.0,
+          "Saree Heavy": (dryCleanPrePlateDoc.data())?["heavy"]?.toDouble() ?? 0.0,
+          "Saree Plain": (dryCleanPrePlateDoc.data())?["plain"]?.toDouble() ?? 0.0,
         };
       });
     } catch (e) {
