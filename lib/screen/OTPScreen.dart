@@ -1,485 +1,9 @@
-// import 'dart:async';
-// import 'package:flutter/material.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:sms_autofill/sms_autofill.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:steam/constant/constant.dart';
-// import 'package:steam/screen/HomeScreen.dart';
-// import 'package:permission_handler/permission_handler.dart';
-// import 'package:flutter/foundation.dart' show kIsWeb;
-//
-// class OtpPage extends StatefulWidget {
-//   final String verificationId;
-//   final String phoneNumber;
-//
-//   const OtpPage({
-//     super.key,
-//     required this.verificationId,
-//     required this.phoneNumber,
-//   });
-//
-//   @override
-//   _OtpPageState createState() => _OtpPageState();
-// }
-//
-// class _OtpPageState extends State<OtpPage> {
-//   final TextEditingController otpController = TextEditingController();
-//   final TextEditingController nameController = TextEditingController();
-//   bool isLoading = false;
-//   bool _showNameInput = false;
-//   StreamSubscription<String>? _smsSubscription;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     if (!kIsWeb) {
-//       _listenForOtp();
-//     }
-//   }
-//
-//   Future<void> _listenForOtp() async {
-//     try {
-//       final status = await Permission.sms.request();
-//       if (status.isGranted) {
-//         _smsSubscription = SmsAutoFill().code.listen((String? code) {
-//           if (code != null && code.length == 6) {
-//             setState(() {
-//               otpController.text = code;
-//             });
-//             verifyOTP();
-//           }
-//         }, onError: (error) {
-//           print("SMS listener error: $error");
-//         });
-//
-//         await SmsAutoFill().listenForCode;
-//         await SmsAutoFill().getAppSignature.then((signature) {
-//           print("App signature for SMS Retriever: $signature");
-//         });
-//       } else {
-//         _showSnackBar("SMS permissions are required for autofill.", isError: true);
-//       }
-//     } catch (e) {
-//       print("Error initializing SMS listener: $e");
-//     }
-//   }
-//
-//   @override
-//   void dispose() {
-//     _smsSubscription?.cancel();
-//     if (!kIsWeb) {
-//       SmsAutoFill().unregisterListener();
-//     }
-//     otpController.dispose();
-//     nameController.dispose();
-//     super.dispose();
-//   }
-//
-//   void verifyOTP() async {
-//     if (otpController.text.length != 6) {
-//       _showSnackBar("Please enter a valid 6-digit OTP.", isError: true);
-//       return;
-//     }
-//
-//     setState(() {
-//       isLoading = true;
-//     });
-//
-//     try {
-//       PhoneAuthCredential credential = PhoneAuthProvider.credential(
-//         verificationId: widget.verificationId,
-//         smsCode: otpController.text.trim(),
-//       );
-//
-//       await FirebaseAuth.instance.signInWithCredential(credential);
-//       await _handleUserDataAndNavigation();
-//     } on FirebaseAuthException catch (e) {
-//       _showSnackBar("OTP Verification Failed: ${e.message}", isError: true);
-//       setState(() {
-//         isLoading = false;
-//       });
-//     } catch (e) {
-//       _showSnackBar("An unexpected error occurred: ${e.toString()}", isError: true);
-//       setState(() {
-//         isLoading = false;
-//       });
-//     }
-//   }
-//
-//   Future<void> _handleUserDataAndNavigation() async {
-//     final userDocRef = FirebaseFirestore.instance.collection('users').doc(widget.phoneNumber);
-//     final userDoc = await userDocRef.get();
-//
-//     if (userDoc.exists && (userDoc.data()?['name'] as String?)?.isNotEmpty == true) {
-//       _navigateToHomePage();
-//     } else {
-//       setState(() {
-//         _showNameInput = true;
-//         isLoading = false;
-//       });
-//     }
-//   }
-//
-//   Future<void> _saveUserName() async {
-//     if (nameController.text.trim().isEmpty) {
-//       _showSnackBar("Please enter your name.", isError: true);
-//       return;
-//     }
-//
-//     setState(() {
-//       isLoading = true;
-//     });
-//
-//     try {
-//       final userDocRef = FirebaseFirestore.instance.collection('users').doc(widget.phoneNumber);
-//
-//       await userDocRef.set(
-//         {'name': nameController.text.trim()},
-//         SetOptions(merge: true),
-//       );
-//
-//       _navigateToHomePage();
-//     } catch (e) {
-//       _showSnackBar("Failed to save name: ${e.toString()}", isError: true);
-//     } finally {
-//       setState(() {
-//         isLoading = false;
-//       });
-//     }
-//   }
-//
-//   void _navigateToHomePage() {
-//     Navigator.pushReplacement(
-//       context,
-//       MaterialPageRoute(builder: (context) => const HomePage()),
-//     );
-//   }
-//
-//   void _showSnackBar(String message, {bool isError = false}) {
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       SnackBar(
-//         content: Text(message),
-//         backgroundColor: isError ? Colors.red : Colors.green,
-//       ),
-//     );
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: bgColorPink,
-//       appBar: kIsWeb
-//           ? null
-//           : AppBar(
-//         backgroundColor: bgColorPink,
-//         elevation: 0,
-//         leading: IconButton(
-//           icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
-//           onPressed: isLoading ? null : () => Navigator.pop(context),
-//         ),
-//       ),
-//       body: LayoutBuilder(
-//         builder: (context, constraints) {
-//           if (constraints.maxWidth > 800) {
-//             return _buildWebLayout(context);
-//           } else {
-//             return _buildMobileLayout(context);
-//           }
-//         },
-//       ),
-//     );
-//   }
-//
-//   Widget _buildMobileLayout(BuildContext context) {
-//     final mediaQuery = MediaQuery.of(context);
-//     final screenHeight = mediaQuery.size.height;
-//     final screenWidth = mediaQuery.size.width;
-//
-//     return SafeArea(
-//       child: Padding(
-//         padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             SizedBox(height: screenHeight * 0.2),
-//             Text(
-//               _showNameInput ? 'Enter Your Name' : 'Enter OTP',
-//               style: const TextStyle(
-//                 color: Colors.white,
-//                 fontSize: 28,
-//                 fontWeight: FontWeight.bold,
-//               ),
-//             ),
-//             SizedBox(height: screenHeight * 0.01),
-//             Image.asset('assets/images/line.png', width: screenWidth * 0.6),
-//             SizedBox(height: screenHeight * 0.05),
-//             _showNameInput
-//                 ? Column(
-//               children: [
-//                 TextField(
-//                   controller: nameController,
-//                   style: const TextStyle(color: bgColorPink),
-//                   decoration: const InputDecoration(
-//                     hintText: "Your Name",
-//                     hintStyle: TextStyle(color: bgColorPink),
-//                     filled: true,
-//                     fillColor: Colors.white,
-//                     border: OutlineInputBorder(
-//                       borderRadius: BorderRadius.horizontal(right: Radius.circular(20)),
-//                       borderSide: BorderSide.none,
-//                     ),
-//                   ),
-//                   keyboardType: TextInputType.text,
-//                 ),
-//                 SizedBox(height: screenHeight * 0.04),
-//                 Center(
-//                   child: isLoading
-//                       ? const CircularProgressIndicator(color: Colors.white)
-//                       : ElevatedButton(
-//                     onPressed: _saveUserName,
-//                     style: ElevatedButton.styleFrom(
-//                       backgroundColor: Colors.white,
-//                       foregroundColor: const Color(0xFFA64AE2),
-//                       shape: RoundedRectangleBorder(
-//                         borderRadius: BorderRadius.circular(12),
-//                       ),
-//                       padding: EdgeInsets.symmetric(
-//                         horizontal: screenWidth * 0.36,
-//                         vertical: screenHeight * 0.02,
-//                       ),
-//                     ),
-//                     child: const Text(
-//                       'Save',
-//                       style: TextStyle(
-//                         color: bgColorPink,
-//                         fontSize: 19,
-//                         fontWeight: FontWeight.bold,
-//                       ),
-//                     ),
-//                   ),
-//                 ),
-//               ],
-//             )
-//                 : Center(
-//               child: PinFieldAutoFill(
-//                 controller: otpController,
-//                 codeLength: 6,
-//                 decoration: BoxLooseDecoration(
-//                   textStyle: const TextStyle(
-//                     fontSize: 20,
-//                     color: Colors.black,
-//                     fontWeight: FontWeight.bold,
-//                   ),
-//                   strokeColorBuilder: PinListenColorBuilder(Colors.white, Colors.green),
-//                   bgColorBuilder: PinListenColorBuilder(Colors.white, Colors.white),
-//                 ),
-//                 onCodeChanged: (code) {
-//                   if (code != null && code.length == 6) {
-//                     otpController.text = code;
-//                     verifyOTP();
-//                   }
-//                 },
-//               ),
-//             ),
-//             if (!_showNameInput) SizedBox(height: screenHeight * 0.04),
-//             if (!_showNameInput)
-//               Center(
-//                 child: isLoading
-//                     ? const CircularProgressIndicator(color: Colors.white)
-//                     : ElevatedButton(
-//                   onPressed: verifyOTP,
-//                   style: ElevatedButton.styleFrom(
-//                     backgroundColor: Colors.white,
-//                     foregroundColor: const Color(0xFFA64AE2),
-//                     shape: RoundedRectangleBorder(
-//                       borderRadius: BorderRadius.circular(12),
-//                     ),
-//                     padding: EdgeInsets.symmetric(
-//                       horizontal: screenWidth * 0.38,
-//                       vertical: screenHeight * 0.02,
-//                     ),
-//                   ),
-//                   child: const Text(
-//                     'Login',
-//                     style: TextStyle(
-//                       color: bgColorPink,
-//                       fontSize: 19,
-//                       fontWeight: FontWeight.bold,
-//                     ),
-//                   ),
-//                 ),
-//               ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-//
-//   Widget _buildWebLayout(BuildContext context) {
-//     return Center(
-//       child: Container(
-//         constraints: const BoxConstraints(maxWidth: 1200),
-//         padding: const EdgeInsets.all(40),
-//         child: Row(
-//           children: [
-//             Expanded(
-//               flex: 1,
-//               child: Column(
-//                 mainAxisAlignment: MainAxisAlignment.center,
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   const Text(
-//                     'Verification',
-//                     style: TextStyle(
-//                       color: Colors.white,
-//                       fontSize: 48,
-//                       fontWeight: FontWeight.bold,
-//                     ),
-//                   ),
-//                   const SizedBox(height: 20),
-//                   Image.asset(
-//                     'assets/images/line.png',
-//                     width: 300,
-//                     fit: BoxFit.contain,
-//                   ),
-//                   const SizedBox(height: 40),
-//                 ],
-//               ),
-//             ),
-//             Expanded(
-//               flex: 1,
-//               child: Column(
-//                 mainAxisAlignment: MainAxisAlignment.center,
-//                 crossAxisAlignment: CrossAxisAlignment.center,
-//                 children: [
-//                   Text(
-//                     _showNameInput ? 'Enter Your Name' : 'Enter OTP',
-//                     style: const TextStyle(
-//                       color: Colors.white,
-//                       fontSize: 36,
-//                       fontWeight: FontWeight.bold,
-//                     ),
-//                   ),
-//                   const SizedBox(height: 30),
-//                   _showNameInput
-//                       ? Column(
-//                     children: [
-//                       TextField(
-//                         controller: nameController,
-//                         style: const TextStyle(color: bgColorPink, fontSize: 24),
-//                         decoration: const InputDecoration(
-//                           hintText: "Your Name",
-//                           hintStyle: TextStyle(color: bgColorPink),
-//                           filled: true,
-//                           fillColor: Colors.white,
-//                           border: OutlineInputBorder(
-//                             borderRadius: BorderRadius.horizontal(right: Radius.circular(20)),
-//                             borderSide: BorderSide.none,
-//                           ),
-//                           contentPadding: EdgeInsets.symmetric(
-//                             horizontal: 30,
-//                             vertical: 25,
-//                           ),
-//                         ),
-//                         keyboardType: TextInputType.text,
-//                       ),
-//                       const SizedBox(height: 30),
-//                       isLoading
-//                           ? const CircularProgressIndicator(color: Colors.white)
-//                           : SizedBox(
-//                         width: double.infinity,
-//                         child: ElevatedButton(
-//                           onPressed: _saveUserName,
-//                           style: ElevatedButton.styleFrom(
-//                             backgroundColor: Colors.white,
-//                             foregroundColor: const Color(0xFFA64AE2),
-//                             shape: RoundedRectangleBorder(
-//                               borderRadius: BorderRadius.circular(12),
-//                             ),
-//                             padding: const EdgeInsets.symmetric(
-//                               vertical: 25,
-//                             ),
-//                           ),
-//                           child: const Text(
-//                             'Save',
-//                             style: TextStyle(
-//                               color: bgColorPink,
-//                               fontSize: 24,
-//                               fontWeight: FontWeight.bold,
-//                             ),
-//                           ),
-//                         ),
-//                       ),
-//                     ],
-//                   )
-//                       : Column(
-//                     children: [
-//                       TextField(
-//                         controller: otpController,
-//                         style: const TextStyle(color: bgColorPink, fontSize: 24),
-//                         decoration: const InputDecoration(
-//                           hintText: "Enter 6-digit OTP",
-//                           hintStyle: TextStyle(color: bgColorPink),
-//                           filled: true,
-//                           fillColor: Colors.white,
-//                           border: OutlineInputBorder(
-//                             borderRadius: BorderRadius.horizontal(right: Radius.circular(20)),
-//                             borderSide: BorderSide.none,
-//                           ),
-//                           contentPadding: EdgeInsets.symmetric(
-//                             horizontal: 30,
-//                             vertical: 25,
-//                           ),
-//                         ),
-//                         keyboardType: TextInputType.number,
-//                         maxLength: 6,
-//                       ),
-//                       const SizedBox(height: 30),
-//                       isLoading
-//                           ? const CircularProgressIndicator(color: Colors.white)
-//                           : SizedBox(
-//                         width: double.infinity,
-//                         child: ElevatedButton(
-//                           onPressed: verifyOTP,
-//                           style: ElevatedButton.styleFrom(
-//                             backgroundColor: Colors.white,
-//                             foregroundColor: const Color(0xFFA64AE2),
-//                             shape: RoundedRectangleBorder(
-//                               borderRadius: BorderRadius.circular(12),
-//                             ),
-//                             padding: const EdgeInsets.symmetric(
-//                               vertical: 25,
-//                             ),
-//                           ),
-//                           child: const Text(
-//                             'Login',
-//                             style: TextStyle(
-//                               color: bgColorPink,
-//                               fontSize: 24,
-//                               fontWeight: FontWeight.bold,
-//                             ),
-//                           ),
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:steam/constant/constant.dart';
-import 'package:steam/screen/HomeScreen.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class OtpPage extends StatefulWidget {
@@ -613,28 +137,120 @@ class _OtpPageState extends State<OtpPage> with CodeAutoFill {
   // }
 
   Future<void> _handleUserDataAndNavigation() async {
-    final userDocRef = FirebaseFirestore.instance.collection('users').doc(widget.phoneNumber);
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final String authPhone = currentUser?.phoneNumber ?? "";
+    final String widgetPhone = widget.phoneNumber;
+    
+    // Create a list of potential document IDs to check
+    final Set<String> potentialIds = {};
+    if (authPhone.isNotEmpty) potentialIds.add(authPhone);
+    if (widgetPhone.isNotEmpty) potentialIds.add(widgetPhone);
+    
+    // Variations without '+'
+    if (authPhone.startsWith('+')) potentialIds.add(authPhone.substring(1));
+    if (widgetPhone.startsWith('+')) potentialIds.add(widgetPhone.substring(1));
+    
+    // Variations without country code (assuming +91)
+    if (authPhone.startsWith('+91')) potentialIds.add(authPhone.substring(3));
+    if (widgetPhone.startsWith('+91')) potentialIds.add(widgetPhone.substring(3));
+    
+    // Digits only
+    final digitsAuth = authPhone.replaceAll(RegExp(r'\D'), '');
+    final digitsWidget = widgetPhone.replaceAll(RegExp(r'\D'), '');
+    if (digitsAuth.isNotEmpty) potentialIds.add(digitsAuth);
+    if (digitsWidget.isNotEmpty) potentialIds.add(digitsWidget);
+
+    debugPrint("Checking potential Firestore document IDs: $potentialIds");
+
     try {
-      final userDoc = await userDocRef.get();
-
-      final userData = userDoc.data();
-      final name = userData != null && userData.containsKey('name')
-          ? (userData['name'] as String?)?.trim()
-          : null;
-
-      if (userDoc.exists && name != null && name.isNotEmpty) {
-        _navigateToHomePage();
-      } else {
-        setState(() {
-          _showNameInput = true;
-          isLoading = false;
-        });
+      DocumentSnapshot? foundDoc;
+      
+      // 1. Try direct ID lookups for every variation
+      for (var id in potentialIds) {
+        if (id.isEmpty) continue;
+        final doc = await FirebaseFirestore.instance.collection('users').doc(id).get();
+        if (doc.exists) {
+          final data = doc.data() as Map<String, dynamic>?;
+          final name = (data?['name'] ?? data?['Name'] ?? data?['userName'] ?? data?['username']) as String?;
+          if (name != null && name.trim().isNotEmpty) {
+            foundDoc = doc;
+            debugPrint("Found user document with ID: $id and Name: $name");
+            break;
+          }
+        }
       }
-    } catch (e) {
-      _showSnackBar("Error checking user data: ${e.toString()}", isError: true);
+
+      // 2. Fallback: Search by phoneNumber field in any document
+      if (foundDoc == null) {
+        for (var phone in [authPhone, widgetPhone, digitsAuth]) {
+          if (phone.isEmpty) continue;
+          final query = await FirebaseFirestore.instance
+              .collection('users')
+              .where('phoneNumber', isEqualTo: phone)
+              .limit(1)
+              .get();
+          if (query.docs.isNotEmpty) {
+            final doc = query.docs.first;
+            final data = doc.data() as Map<String, dynamic>?;
+            final name = (data?['name'] ?? data?['Name'] ?? data?['userName'] ?? data?['username']) as String?;
+            if (name != null && name.trim().isNotEmpty) {
+              foundDoc = doc;
+              debugPrint("Found user by phoneNumber field: $phone (ID: ${doc.id}) and Name: $name");
+              break;
+            }
+          }
+        }
+      }
+
+      // 3. Try searching by 'phone' field (just in case)
+      if (foundDoc == null) {
+        for (var phone in [authPhone, widgetPhone, digitsAuth]) {
+          if (phone.isEmpty) continue;
+          final query = await FirebaseFirestore.instance
+              .collection('users')
+              .where('phone', isEqualTo: phone)
+              .limit(1)
+              .get();
+          if (query.docs.isNotEmpty) {
+            foundDoc = query.docs.first;
+            debugPrint("Found user by 'phone' field: $phone");
+            break;
+          }
+        }
+      }
+
+      // 4. Try lookup by UID
+      if (foundDoc == null && currentUser != null) {
+        final doc = await FirebaseFirestore.instance.collection('users').doc(currentUser.uid).get();
+        if (doc.exists && (doc.data() as Map<String, dynamic>?)?.containsKey('name') == true) {
+          foundDoc = doc;
+          debugPrint("Found user by UID: ${currentUser.uid}");
+        }
+      }
+
+      if (foundDoc != null) {
+        final data = foundDoc.data() as Map<String, dynamic>?;
+        final name = (data?['name'] ?? data?['Name'] ?? data?['userName'] ?? data?['username']) as String?;
+        if (name != null && name.trim().isNotEmpty) {
+          debugPrint("Successfully identified existing user: $name");
+          _navigateToHomePage();
+          return;
+        }
+      }
+
+      // If we're here, no valid user name was found
+      debugPrint("No existing user name found. Prompting for input.");
       setState(() {
-        isLoading = false;
         _showNameInput = true;
+        isLoading = false;
+      });
+      
+    } catch (e) {
+      debugPrint("Error in _handleUserDataAndNavigation: $e");
+      // Fallback: allow user to enter name even if lookup failed
+      setState(() {
+        _showNameInput = true;
+        isLoading = false;
       });
     }
   }
@@ -651,17 +267,34 @@ class _OtpPageState extends State<OtpPage> with CodeAutoFill {
     });
 
     try {
-      final userDocRef = FirebaseFirestore.instance.collection('users').doc(widget.phoneNumber);
+      final currentUser = FirebaseAuth.instance.currentUser;
+      // ALWAYS use the normalized phone number from Auth as the primary ID if available
+      final phoneNumber = currentUser?.phoneNumber ?? widget.phoneNumber;
+      final userDocRef = FirebaseFirestore.instance.collection('users').doc(phoneNumber);
 
-      await userDocRef.set(
-        {'name': trimmedName},
-        SetOptions(merge: true),
-      );
+      debugPrint("Saving user name '$trimmedName' to document ID: $phoneNumber");
 
-      final userDoc = await userDocRef.get();
-      final savedName = userDoc.data()?['name'] as String?;
-      if (savedName == null || savedName.trim().isEmpty) {
-        throw Exception("Failed to verify saved name in Firestore");
+      await userDocRef.set({
+        'name': trimmedName,
+        'phoneNumber': phoneNumber,
+        'uid': currentUser?.uid,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      // Quick verification with retry
+      bool saved = false;
+      for (int i = 0; i < 3; i++) {
+        final userDoc = await userDocRef.get();
+        final savedName = (userDoc.data() as Map<String, dynamic>?)?['name'] as String?;
+        if (savedName != null && savedName.trim().isNotEmpty) {
+          saved = true;
+          break;
+        }
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+
+      if (!saved) {
+        throw Exception("Firestore sync delay. Please try again.");
       }
 
       _navigateToHomePage();
@@ -675,11 +308,7 @@ class _OtpPageState extends State<OtpPage> with CodeAutoFill {
 
   void _navigateToHomePage() {
     if (mounted) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
-            (Route<dynamic> route) => false,
-      );
+      Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }
 

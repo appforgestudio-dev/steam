@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:steam/constant/constant.dart';
-import 'package:steam/screen/HomeScreen.dart';
 
 class OrderConfirmationPage extends StatefulWidget {
   final String orderId;
@@ -57,10 +56,7 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage>
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios, size: 20, color: Colors.white),
             onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => HomePage()),
-              );
+              Navigator.of(context).popUntil((route) => route.isFirst);
             },
           ),
           backgroundColor: bgColorPink,
@@ -127,10 +123,7 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage>
                 width: 200,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => HomePage()),
-                    );
+                    Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: bgColorPink,
