@@ -183,6 +183,8 @@ class _AddressPageState extends State<AddressPage> {
       'latitude': _selectedLatLn!.latitude,
       'longitude': _selectedLatLn!.longitude,
       'label': finalLabel,
+      'latitude':     _selectedLatLn!.latitude,
+      'longitude':    _selectedLatLn!.longitude,
     };
 
     await AddressPersistence.saveOrUpdateAddress(addressData);
