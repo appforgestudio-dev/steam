@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../constant/constant.dart';
 import '../constant/cart_persistence.dart';
-import '../constant/constant.dart' as constants;
 import '../price list/DryCleanPriceList.dart';
 import '../price list/starch.dart';
 import '../price list/wash_iron.dart' show WashAndIronPage;
@@ -21,15 +19,15 @@ import '../sub screen/settings.dart';
 import '../sub screen/subscription.dart';
 import 'AddressPage.dart';
 import '../sub screen/ordersPage.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:in_app_update/in_app_update.dart';
-import 'MainPage.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'cart.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+
+// â”€â”€â”€ Design tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const Color _primary = Color(0xFFFF4081);
+const Color _primaryDark = Color(0xFFE91E63);
+const Color _surface = Color(0xFFF8F9FF);
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -38,83 +36,102 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   String _userName = "Guest";
   String? _userPhoneNumber;
   final TextEditingController _nameController = TextEditingController();
   Map<String, dynamic>? _currentAddress;
   bool _isPremiumBooked = false;
-  String? _currentVersion;
-  bool _isCheckingUpdate = false;
-  bool _isUpdateAvailable = false;
   int _cartItemCount = 0;
   StreamSubscription<User?>? _authSubscription;
 
+  late AnimationController _heroController;
+  late Animation<double> _heroFade;
+  late Animation<Offset> _heroSlide;
 
   final List<Map<String, dynamic>> standardServices = const [
     {
       "name": "Wash & Fold",
-      "color": Colors.white,
+      "icon": Icons.local_laundry_service,
       "image": "assets/images/wash-fold.png",
-      "price": "View Prices"
+      "price": "View Prices",
+      "gradient": [Color(0xFF6A11CB), Color(0xFF2575FC)],
     },
     {
       "name": "Wash & Iron",
-      "color": Colors.white,
+      "icon": Icons.iron,
       "image": "assets/images/wash-iron.png",
-      "price": "View Prices"
+      "price": "View Prices",
+      "gradient": [Color(0xFFFF4081), Color(0xFFFF6E40)],
     },
     {
       "name": "Dry Clean",
-      "color": Colors.white,
+      "icon": Icons.dry_cleaning,
       "image": "assets/images/dry-cleaning.png",
-      "price": "View Prices"
+      "price": "View Prices",
+      "gradient": [Color(0xFF11998E), Color(0xFF38EF7D)],
     },
     {
       "name": "Steam Press Iron",
-      "color": Colors.white,
+      "icon": Icons.stream,
       "image": "assets/images/ironing.png",
-      "price": "View Prices"
+      "price": "View Prices",
+      "gradient": [Color(0xFFF7971E), Color(0xFFFFD200)],
     },
     {
       "name": "Saree Pre-Pleat",
-      "color": Colors.white,
+      "icon": Icons.style,
       "image": "assets/images/saree.png",
-      "price": "View Prices"
+      "price": "View Prices",
+      "gradient": [Color(0xFFDA22FF), Color(0xFF9733EE)],
     },
     {
       "name": "Wash & Starch",
-      "color": Colors.white,
+      "icon": Icons.water_drop,
       "image": "assets/images/starch.png",
-      "price": "View Prices"
+      "price": "View Prices",
+      "gradient": [Color(0xFF1FA2FF), Color(0xFF12D8FA)],
     },
   ];
 
   final List<Map<String, dynamic>> premiumServices = const [
     {
       "name": "Premium Laundry",
-      "color": Colors.white,
       "image": "assets/images/premium.png",
-      "price": "₹159/KG",
-      "description": "Wash, Iron, Fragrance, Fold, Special Packing"
+      "price": "\u20b9159/KG",
+      "description": "Wash \u00b7 Iron \u00b7 Fragrance \u00b7 Fold \u00b7 Special Packing",
     },
   ];
 
   @override
   void initState() {
     super.initState();
+    _heroController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _heroFade = CurvedAnimation(parent: _heroController, curve: Curves.easeOut);
+    _heroSlide = Tween<Offset>(begin: const Offset(0, 0.12), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _heroController, curve: Curves.easeOut));
+    _heroController.forward();
+
     _requestNotificationPermission();
     _initializePage();
-    _authSubscription = FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      if (user != null) {
-        print("User is logged in, setting up FCM token...");
-        _setupAndSaveFCMToken(user);
-      } else {
-        print("No user logged in.");
-      }
+    _authSubscription =
+        FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user != null) _setupAndSaveFCMToken(user);
     });
-
   }
+
+  @override
+  void dispose() {
+    _heroController.dispose();
+    _nameController.dispose();
+    _authSubscription?.cancel();
+    super.dispose();
+  }
+
+  // â”€â”€â”€ Business logic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _requestLocationPermission() async {
     try {
@@ -130,9 +147,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _initializePage() async {
     await _fetchUserName();
     await _loadCurrentAddress();
-    if (!kIsWeb) {
-      _requestLocationPermission();
-    }
+    if (!kIsWeb) _requestLocationPermission();
     if (mounted) {
       await Future.wait([
         _checkPremiumBookedStatus(),
@@ -170,72 +185,36 @@ class _HomePageState extends State<HomePage> {
           }
         } else {
           Future.delayed(const Duration(milliseconds: 1000), () {
-            if (mounted) {
-              _showAddressSelectionSheet(onAddressChanged: _loadCurrentAddress);
-            }
+            if (mounted) _showAddressSelectionSheet(onAddressChanged: _loadCurrentAddress);
           });
         }
       });
     }
   }
 
-
   Future<void> _requestNotificationPermission() async {
     if (kIsWeb) return;
-
-    final messaging = FirebaseMessaging.instance;
-
-    final settings = await messaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
-
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('✅ Notification Permission granted.');
-    } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
-      print('User granted provisional notification permission.');
-    } else {
-      print('❌ User declined or has not accepted notification permission.');
-    }
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _authSubscription?.cancel();
-    super.dispose();
+    await FirebaseMessaging.instance
+        .requestPermission(alert: true, badge: true, sound: true);
   }
 
   Future<void> _setupAndSaveFCMToken(User user) async {
     try {
       final fcmToken = await FirebaseMessaging.instance.getToken(
-        vapidKey: kIsWeb ? "BAEu6_xp-409KcIzsYi7LmiOAMqMDeL20885I1kILS2zN19IxJFoEraUxgbsTGJsPtiHhK3cG3j3HfPfRXhRkCc" : null,
+        vapidKey: kIsWeb
+            ? "BAEu6_xp-409KcIzsYi7LmiOAMqMDeL20885I1kILS2zN19IxJFoEraUxgbsTGJsPtiHhK3cG3j3HfPfRXhRkCc"
+            : null,
       );
-
       if (fcmToken != null) {
-        print("✅ FCM Token: $fcmToken");
-
-        final userDocRef = FirebaseFirestore.instance.collection('users').doc(user.phoneNumber);
-
-        await userDocRef.set(
-          {
-            'fcmToken': fcmToken,
-            'phoneNumber': user.phoneNumber,
-            'updatedAt': FieldValue.serverTimestamp(),
-          },
-          SetOptions(merge: true),
-        );
-      } else {
-        print("❌ FCM TOKEN IS NULL. Check your VAPID key and Firebase setup.");
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.phoneNumber)
+            .set(
+              {'fcmToken': fcmToken, 'phoneNumber': user.phoneNumber, 'updatedAt': FieldValue.serverTimestamp()},
+              SetOptions(merge: true),
+            );
       }
-    } catch (e) {
-      print("❌ ERROR getting FCM token: $e");
-    }
+    } catch (_) {}
   }
 
   Future<void> _fetchUserName() async {
@@ -247,7 +226,6 @@ class _HomePageState extends State<HomePage> {
             .collection('users')
             .doc(_userPhoneNumber)
             .get();
-
         if (userDoc.exists && userDoc.data() != null) {
           final data = userDoc.data()!;
           setState(() {
@@ -255,39 +233,25 @@ class _HomePageState extends State<HomePage> {
           });
           _nameController.text = _userName;
         } else {
-          setState(() {
-            _userName = "New User";
-          });
+          setState(() => _userName = "New User");
           _nameController.text = "";
         }
       } catch (e) {
         _showSnackBar("Failed to load user name: ${e.toString()}", isError: true);
-        setState(() {
-          _userName = "Error User";
-        });
+        setState(() => _userName = "Error User");
       }
     } else {
-      setState(() {
-        _userName = "Guest";
-      });
+      setState(() => _userName = "Guest");
     }
   }
 
   Future<void> _loadCurrentAddress() async {
     try {
       final savedAddress = await AddressPersistence.loadCurrentAddress();
-      if (mounted) {
-        setState(() {
-          _currentAddress = savedAddress;
-        });
-      }
+      if (mounted) setState(() => _currentAddress = savedAddress);
     } catch (e) {
       _showSnackBar("Failed to load address: ${e.toString()}", isError: true);
-      if (mounted) {
-        setState(() {
-          _currentAddress = null;
-        });
-      }
+      if (mounted) setState(() => _currentAddress = null);
     }
   }
 
@@ -298,31 +262,21 @@ class _HomePageState extends State<HomePage> {
         title: const Text('Delete Address'),
         content: const Text('Are you sure you want to delete this address?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: TextStyle(color: Colors.red))),
         ],
       ),
     );
-
     if (confirm == true && mounted) {
       await AddressPersistence.deleteAddress(addressToDelete);
-      setState(() {
-        _currentAddress = null;
-      });
+      setState(() => _currentAddress = null);
+      if (!mounted) return;
       Navigator.pop(context);
       await _loadCurrentAddress();
     }
   }
 
-
   Future<void> _showAddressSelectionSheet({required VoidCallback onAddressChanged}) async {
-
     final List<Map<String, dynamic>> savedAddresses = await AddressPersistence.loadAllAddresses();
     final Map<String, dynamic>? currentAddress = await AddressPersistence.loadCurrentAddress();
     if (!mounted) return;
@@ -331,19 +285,32 @@ class _HomePageState extends State<HomePage> {
       isScrollControlled: true,
       isDismissible: false,
       enableDrag: false,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (BuildContext context) {
-        final screenWidth = MediaQuery.of(context).size.width;
-        final screenHeight = MediaQuery.of(context).size.height;
+        final sw = MediaQuery.of(context).size.width;
+        final sh = MediaQuery.of(context).size.height;
         return Container(
-          padding: EdgeInsets.only(top: screenHeight * 0.025, left: screenWidth * 0.05, right: screenWidth * 0.05, bottom: screenHeight * 0.025 + MediaQuery.of(context).viewPadding.bottom),
+          padding: EdgeInsets.only(
+            top: sh * 0.025,
+            left: sw * 0.05,
+            right: sw * 0.05,
+            bottom: sh * 0.025 + MediaQuery.of(context).viewPadding.bottom,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Select Pickup Address", style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
-              SizedBox(height: screenHeight * 0.018),
+              Center(
+                child: Container(
+                  width: 40, height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              Text("Select Pickup Address", style: TextStyle(fontSize: sw * 0.05, fontWeight: FontWeight.bold)),
+              SizedBox(height: sh * 0.018),
               if (savedAddresses.isEmpty)
-                Center(child: Padding(padding: EdgeInsets.symmetric(vertical: screenHeight * 0.025), child: const Text("No saved addresses found.")))
+                Center(child: Padding(padding: EdgeInsets.symmetric(vertical: sh * 0.025), child: const Text("No saved addresses found.")))
               else
                 Flexible(
                   child: ListView.builder(
@@ -354,19 +321,23 @@ class _HomePageState extends State<HomePage> {
                       final label = address['label'] ?? 'Address';
                       final street = address['street'] ?? '';
                       final door = address['doorNumber'] ?? '';
-                      final bool isSelected = currentAddress != null && currentAddress['label'] == address['label'] && currentAddress['street'] == address['street'];
+                      final bool isSelected = currentAddress != null &&
+                          currentAddress['label'] == address['label'] &&
+                          currentAddress['street'] == address['street'];
                       return Card(
-                        margin: EdgeInsets.symmetric(vertical: screenHeight * 0.006),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: isSelected ? constants.bgColorPink : Colors.transparent, width: 1.5)),
+                        margin: EdgeInsets.symmetric(vertical: sh * 0.006),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: isSelected ? _primary : Colors.transparent, width: 1.5),
+                        ),
                         child: ListTile(
-                          leading: const Icon(Icons.location_on_outlined, color: bgColorPink),
+                          leading: const Icon(Icons.location_on_outlined, color: _primary),
                           title: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
                           subtitle: Text("$door, $street"),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              if (isSelected)
-                                const Icon(Icons.check_circle, color: bgColorPink),
+                              if (isSelected) const Icon(Icons.check_circle, color: _primary),
                               IconButton(
                                 icon: Icon(Icons.close, color: Colors.grey[400]),
                                 onPressed: () => _handleDeleteAddress(address),
@@ -376,6 +347,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           onTap: () async {
                             await AddressPersistence.saveCurrentAddress(address);
+                            if (!context.mounted) return;
                             Navigator.pop(context);
                             onAddressChanged();
                           },
@@ -384,21 +356,22 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
                 ),
-              SizedBox(height: screenHeight * 0.018),
+              SizedBox(height: sh * 0.018),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.add_location_alt_outlined, color: Colors.white),
                   label: const Text("Add New Address", style: TextStyle(color: Colors.white)),
                   onPressed: () async {
-                    Navigator.pop(context); // Close the sheet
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AddressPage()),
-                    );
-                    onAddressChanged(); // <-- Tell HomePage to refresh
+                    Navigator.pop(context);
+                    await Navigator.push(context, MaterialPageRoute(builder: (context) => const AddressPage()));
+                    onAddressChanged();
                   },
-                  style: ElevatedButton.styleFrom(backgroundColor: bgColorPink, padding: EdgeInsets.symmetric(vertical: screenHeight * 0.018), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(screenWidth * 0.025))),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _primary,
+                    padding: EdgeInsets.symmetric(vertical: sh * 0.018),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(sw * 0.025)),
+                  ),
                 ),
               ),
             ],
@@ -425,31 +398,17 @@ class _HomePageState extends State<HomePage> {
     try {
       final savedCart = await CartPersistence.loadCart() ?? {};
       int count = 0;
-      count += (savedCart['dryCleanItems'] as Map<String, dynamic>? ?? {}).values.fold(
-          0, (sum, value) => sum + (value is int ? value : int.tryParse(value.toString()) ?? 0));
-      count += (savedCart['ironingItems'] as Map<String, dynamic>? ?? {}).values.fold(
-          0, (sum, value) => sum + (value is int ? value : int.tryParse(value.toString()) ?? 0));
-      count += (savedCart['washAndFoldItems'] as Map<String, dynamic>? ?? {}).values.fold(
-          0, (sum, value) => sum + (value is int ? value : int.tryParse(value.toString()) ?? 0));
-      count += (savedCart['washAndIronItems'] as Map<String, dynamic>? ?? {}).values.fold(
-          0, (sum, value) => sum + (value is int ? value : int.tryParse(value.toString()) ?? 0));
-      count += (savedCart['washIronStarchItems'] as Map<String, dynamic>? ?? {}).values.fold(
-          0, (sum, value) => sum + (value is int ? value : int.tryParse(value.toString()) ?? 0));
-      count += (savedCart['prePlatedItems'] as Map<String, dynamic>? ?? {})
-          .values
-          .fold(0, (sum, value) => sum + (value['quantity'] as int? ?? 0));
-      count += (savedCart['additionalServices'] as Map<String, dynamic>? ?? {}).values.fold(
-          0,
-              (sum, value) => sum +
-              (value as List).fold(0, (subSum, item) => subSum + (item['quantity'] as int? ?? 0)));
-      setState(() {
-        _cartItemCount = count;
-      });
+      count += (savedCart['dryCleanItems'] as Map<String, dynamic>? ?? {}).values.fold(0, (s, v) => s + (v is int ? v : int.tryParse(v.toString()) ?? 0));
+      count += (savedCart['ironingItems'] as Map<String, dynamic>? ?? {}).values.fold(0, (s, v) => s + (v is int ? v : int.tryParse(v.toString()) ?? 0));
+      count += (savedCart['washAndFoldItems'] as Map<String, dynamic>? ?? {}).values.fold(0, (s, v) => s + (v is int ? v : int.tryParse(v.toString()) ?? 0));
+      count += (savedCart['washAndIronItems'] as Map<String, dynamic>? ?? {}).values.fold(0, (s, v) => s + (v is int ? v : int.tryParse(v.toString()) ?? 0));
+      count += (savedCart['washIronStarchItems'] as Map<String, dynamic>? ?? {}).values.fold(0, (s, v) => s + (v is int ? v : int.tryParse(v.toString()) ?? 0));
+      count += (savedCart['prePlatedItems'] as Map<String, dynamic>? ?? {}).values.fold(0, (s, v) => s + (v['quantity'] as int? ?? 0));
+      count += (savedCart['additionalServices'] as Map<String, dynamic>? ?? {}).values.fold(0, (s, v) => s + (v as List).fold(0, (ss, item) => ss + (item['quantity'] as int? ?? 0)));
+      setState(() => _cartItemCount = count);
     } catch (e) {
       _showSnackBar("Error loading cart item count: ${e.toString()}", isError: true);
-      setState(() {
-        _cartItemCount = 0;
-      });
+      setState(() => _cartItemCount = 0);
     }
   }
 
@@ -458,18 +417,11 @@ class _HomePageState extends State<HomePage> {
       _showSnackBar("Please enter a valid name.", isError: true);
       return;
     }
-
     try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(_userPhoneNumber)
-          .set({'name': _nameController.text.trim()}, SetOptions(merge: true));
-
-      setState(() {
-        _userName = _nameController.text.trim();
-      });
+      await FirebaseFirestore.instance.collection('users').doc(_userPhoneNumber).set({'name': _nameController.text.trim()}, SetOptions(merge: true));
+      setState(() => _userName = _nameController.text.trim());
       _showSnackBar("Name updated successfully!", isError: false);
-      Navigator.pop(context);
+      if (mounted) Navigator.pop(context);
     } catch (e) {
       _showSnackBar("Failed to update name: ${e.toString()}", isError: true);
     }
@@ -482,857 +434,333 @@ class _HomePageState extends State<HomePage> {
       await AddressPersistence.clearCurrentAddress();
       await AddressPersistence.clearAllAddresses();
       await CartPersistence.clearCart();
-
       _showSnackBar("Logged out successfully!", isError: false);
-      if (mounted) {
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      }
+      if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
     } catch (e) {
       _showSnackBar("Error during logout: ${e.toString()}", isError: true);
     }
   }
 
-
-
-  void _showProfileSheet() {
-    final bool isWeb = MediaQuery.of(context).size.width >= 1000;
-
-    if (isWeb) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 400, // Fixed max width for web
-                maxHeight: 500, // Fixed max height to prevent overflow
-              ),
-              child: SingleChildScrollView(
-                child: Container(
-                  padding: const EdgeInsets.all(20), // Fixed padding for consistency
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircleAvatar(
-                        radius: 40, // Fixed radius for web
-                        backgroundColor: bgColorPink,
-                        child: Icon(Icons.person, size: 40, color: Colors.white),
-                      ),
-                      SizedBox(height: 12),
-                      Text(
-                        _userName,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      Text(
-                        _userPhoneNumber ?? "Phone: N/A",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      SizedBox(height: 20),
-                      TextField(
-                        controller: _nameController,
-                        decoration: InputDecoration(
-                          labelText: "Change Name",
-                          labelStyle: TextStyle(color: Colors.grey[700]),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.grey.shade400),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: bgColorPink, width: 2),
-                          ),
-                        ),
-                        style: const TextStyle(color: Colors.black87),
-                      ),
-                      SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _updateUserName,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: bgColorPink,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          child: const Text(
-                            "Save Name",
-                            style: TextStyle(fontSize: 16, color: Colors.white),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            _logout();
-                          },
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.red,
-                            side: const BorderSide(color: Colors.red),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          child: const Text(
-                            "Logout",
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    } else {
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        builder: (BuildContext context) {
-          final screenWidth = MediaQuery.of(context).size.width;
-          final screenHeight = MediaQuery.of(context).size.height;
-          return SingleChildScrollView(
-            child: Container(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom +
-                    MediaQuery.of(context).viewPadding.bottom +
-                    screenHeight * 0.025,
-                top: screenHeight * 0.025,
-                left: screenWidth * 0.05,
-                right: screenWidth * 0.05,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircleAvatar(
-                    radius: screenWidth * 0.1,
-                    backgroundColor: bgColorPink,
-                    child: Icon(Icons.person, size: screenWidth * 0.1, color: Colors.white),
-                  ),
-                  SizedBox(height: screenHeight * 0.012),
-                  Text(
-                    _userName,
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.055,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  Text(
-                    _userPhoneNumber ?? "Phone: N/A",
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.035,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.025),
-                  TextField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      labelText: "Change Name",
-                      labelStyle: TextStyle(color: Colors.grey[700]),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(screenWidth * 0.025),
-                        borderSide: BorderSide(color: Colors.grey.shade400),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(screenWidth * 0.025),
-                        borderSide: const BorderSide(color: bgColorPink, width: 2),
-                      ),
-                    ),
-                    style: const TextStyle(color: Colors.black87),
-                  ),
-                  SizedBox(height: screenHeight * 0.018),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _updateUserName,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: bgColorPink,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(screenWidth * 0.025),
-                        ),
-                        padding: EdgeInsets.symmetric(vertical: screenHeight * 0.018),
-                      ),
-                      child: Text(
-                        "Save Name",
-                        style: TextStyle(fontSize: screenWidth * 0.04, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.012),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _logout();
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red,
-                        side: const BorderSide(color: Colors.red),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(screenWidth * 0.025),
-                        ),
-                        padding: EdgeInsets.symmetric(vertical: screenHeight * 0.018),
-                      ),
-                      child: Text(
-                        "Logout",
-                        style: TextStyle(fontSize: screenWidth * 0.04),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    }
+  Future<void> _checkForUpdate() async {
+    try {
+      AppUpdateInfo appUpdateInfo = await InAppUpdate.checkForUpdate();
+      if (appUpdateInfo.updateAvailability == UpdateAvailability.updateAvailable) {
+        if (appUpdateInfo.immediateUpdateAllowed) {
+          await InAppUpdate.performImmediateUpdate();
+        } else if (appUpdateInfo.flexibleUpdateAllowed) {
+          await InAppUpdate.startFlexibleUpdate();
+        }
+      }
+    } catch (_) {}
   }
+
+
 
   void _showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: isError ? Colors.red : Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
 
+  // â”€â”€â”€ Cart navigation helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  Map<String, int> _parseIntMap(Map<String, dynamic>? raw) {
+    return (raw ?? {}).map((k, v) => MapEntry(k, v is int ? v : int.tryParse(v.toString()) ?? 0));
+  }
 
-  Widget _buildServiceCard(Map<String, dynamic> service, BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Widget destinationPage;
-        if (service["name"] == "Dry Clean") {
-          destinationPage = DryCleanPriceListPage();
-        } else if (service["name"] == "Wash & Fold") {
-          destinationPage = WashAndFoldPage();
-        } else if (service["name"] == "Wash & Iron") {
-          destinationPage = WashAndIronPage();
-        } else if (service["name"] == "Steam Press Iron") {
-          destinationPage = IroningPriceListPage();
-        } else if (service["name"] == "Saree Pre-Pleat") {
-          destinationPage = PrePlatedPage();
-        } else {
-          destinationPage = WashAndStarchPage();
-        }
-        Navigator.of(context)
-            .push(
-          PageTransition(
-            type: PageTransitionType.rightToLeft,
-            child: destinationPage,
+  Future<void> _navigateToCart() async {
+    try {
+      final savedCart = await CartPersistence.loadCart() ?? {};
+      final dci = _parseIntMap(savedCart['dryCleanItems'] as Map<String, dynamic>?);
+      final ii  = _parseIntMap(savedCart['ironingItems'] as Map<String, dynamic>?);
+      final wfi = _parseIntMap(savedCart['washAndFoldItems'] as Map<String, dynamic>?);
+      final wii = _parseIntMap(savedCart['washAndIronItems'] as Map<String, dynamic>?);
+      final wisi = _parseIntMap(savedCart['washIronStarchItems'] as Map<String, dynamic>?);
+      final ppi = (savedCart['prePlatedItems'] as Map<String, dynamic>? ?? {}).map((k, v) => MapEntry(k, Map<String, dynamic>.from(v)));
+      final aS  = (savedCart['additionalServices'] as Map<String, dynamic>? ?? {}).map((k, v) => MapEntry(k, (v as List<dynamic>).cast<Map<String, dynamic>>()));
+      final dct = savedCart['dryCleanTotal'] as double? ?? 0.0;
+      final at  = savedCart['additionalTotal'] as double? ?? 0.0;
+
+      if (!mounted) return;
+      Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: CartPage(
+        dryCleanItems: dci, ironingItems: ii, washAndFoldItems: wfi,
+        washAndIronItems: wii, washIronStarchItems: wisi,
+        prePlatedItems: ppi, additionalServices: aS,
+        dryCleanTotal: dct, additionalTotal: at,
+      ))).then((_) { _checkPremiumBookedStatus(); _updateCartItemCount(); });
+    } catch (e) {
+      _showSnackBar("Error loading cart: ${e.toString()}", isError: true);
+    }
+  }
+
+  void _navigateToService(String name) {
+    Widget dest;
+    if (name == "Dry Clean") {
+      dest = DryCleanPriceListPage();
+    } else if (name == "Wash & Fold") {
+      dest = WashAndFoldPage();
+    } else if (name == "Wash & Iron") {
+      dest = WashAndIronPage();
+    } else if (name == "Steam Press Iron") {
+      dest = IroningPriceListPage();
+    } else if (name == "Saree Pre-Pleat") {
+      dest = PrePlatedPage();
+    } else {
+      dest = WashAndStarchPage();
+    }
+    Navigator.of(context).push(PageTransition(type: PageTransitionType.rightToLeft, child: dest)).then((_) {
+      _updateCartItemCount();
+      _checkPremiumBookedStatus();
+    });
+  }
+
+  // â”€â”€â”€ Profile sheet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  void _showProfileSheet() {
+    final bool isWeb = MediaQuery.of(context).size.width >= 1000;
+
+    Widget profileContent() => Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 90, height: 90,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(colors: [_primary, Color(0xFFFF6E40)]),
+            boxShadow: [BoxShadow(color: _primary.withValues(alpha: 0.4), blurRadius: 20, spreadRadius: 2)],
           ),
-        )
-            .then((_) {
-          _updateCartItemCount();
-          _checkPremiumBookedStatus();
-        });
-      },
-      borderRadius: BorderRadius.circular(15),
-      child: Container(
-        height: 180, // Fixed height to eliminate extra space
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              spreadRadius: 2,
-            ),
-          ],
+          child: const CircleAvatar(backgroundColor: Colors.transparent, child: Icon(Icons.person_rounded, size: 48, color: Colors.white)),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 100,
-              width: double.infinity,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                child: Image.asset(
-                  service["image"],
-                  fit: BoxFit.contain,
+        const SizedBox(height: 12),
+        Text(_userName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
+        const SizedBox(height: 4),
+        Text(_userPhoneNumber ?? "Phone: N/A", style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+        const SizedBox(height: 24),
+        TextField(
+          controller: _nameController,
+          decoration: InputDecoration(
+            labelText: "Change Name",
+            prefixIcon: const Icon(Icons.edit, color: _primary),
+            labelStyle: const TextStyle(color: Colors.grey),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: _primary, width: 2)),
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _updateUserName,
+            style: ElevatedButton.styleFrom(backgroundColor: _primary, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)), elevation: 0),
+            child: const Text("Save Name", style: TextStyle(fontSize: 16, color: Colors.white)),
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () { Navigator.pop(context); _logout(); },
+            style: OutlinedButton.styleFrom(foregroundColor: Colors.red, side: const BorderSide(color: Colors.red), padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
+            child: const Text("Logout", style: TextStyle(fontSize: 16)),
+          ),
+        ),
+      ],
+    );
+
+    if (isWeb) {
+      showDialog(
+        context: context,
+        builder: (_) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400, maxHeight: 520),
+            child: Padding(padding: const EdgeInsets.all(28), child: SingleChildScrollView(child: profileContent())),
+          ),
+        ),
+      );
+    } else {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        builder: (context) => Padding(
+          padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24 + MediaQuery.of(context).viewInsets.bottom),
+          child: SingleChildScrollView(child: profileContent()),
+        ),
+      );
+    }
+  }
+
+  // â”€â”€â”€ Service card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  Widget _buildServiceCard(Map<String, dynamic> service, int index) {
+    final List<Color> gradient = (service['gradient'] as List).cast<Color>();
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: Duration(milliseconds: 400 + index * 80),
+      curve: Curves.easeOut,
+      builder: (context, val, child) => Opacity(opacity: val, child: Transform.translate(offset: Offset(0, 20 * (1 - val)), child: child)),
+      child: GestureDetector(
+        onTap: () => _navigateToService(service['name'] as String),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+            boxShadow: [BoxShadow(color: gradient.first.withValues(alpha: 0.4), blurRadius: 16, offset: const Offset(0, 6))],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -20, left: -20,
+                  child: Container(width: 80, height: 80, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.4))),
                 ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10), // Consistent padding
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    service["name"],
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
+                Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        width: 44, height: 44,
+                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(12)),
+                        child: Icon(service['icon'] as IconData, color: Colors.white, size: 24),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(service['name'] as String, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13, height: 1.2)),
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(20)),
+                            child: const Text("View Prices \u2192", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 5),
-                  Text(
-                    service["price"],
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: bgColorPink,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildPremiumCard(Map<String, dynamic> service, BuildContext context) {
-    return InkWell(
-      onTap: () {},
-      borderRadius: BorderRadius.circular(15),
+  // â”€â”€â”€ Premium card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  Widget _buildPremiumCard(Map<String, dynamic> service) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 700),
+      curve: Curves.easeOut,
+      builder: (context, val, child) => Opacity(opacity: val, child: child),
       child: Container(
         margin: const EdgeInsets.only(bottom: 20),
         decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
           color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              spreadRadius: 2,
-            ),
-          ],
+          border: Border.all(color: Colors.pinkAccent.withValues(alpha: 0.3), width: 1.5),
+          boxShadow: [BoxShadow(color: Colors.pinkAccent.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 8))],
         ),
-        child: Column(
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-              child: Stack(
-                children: [
-                  Image.asset(
-                    service["image"],
-                    height: 120,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.amber.shade700,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Text(
-                        "PREMIUM",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(15),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        service["name"],
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      Text(
-                        service["price"],
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: bgColorPink,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    service["description"],
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isPremiumBooked
-                          ? null
-                          : () async {
-                        try {
-                          final savedCart = await CartPersistence.loadCart() ?? {};
-                          final dryCleanItems = (savedCart['dryCleanItems'] as Map<String, dynamic>? ?? {})
-                              .map((key, value) => MapEntry(
-                              key, value is int ? value : int.tryParse(value.toString()) ?? 0));
-                          final ironingItems = (savedCart['ironingItems'] as Map<String, dynamic>? ?? {})
-                              .map((key, value) => MapEntry(
-                              key, value is int ? value : int.tryParse(value.toString()) ?? 0));
-                          final washAndFoldItems = (savedCart['washAndFoldItems'] as Map<String, dynamic>? ?? {})
-                              .map((key, value) => MapEntry(
-                              key, value is int ? value : int.tryParse(value.toString()) ?? 0));
-                          final washAndIronItems = (savedCart['washAndIronItems'] as Map<String, dynamic>? ?? {})
-                              .map((key, value) => MapEntry(
-                              key, value is int ? value : int.tryParse(value.toString()) ?? 0));
-                          final washIronStarchItems = (savedCart['washIronStarchItems'] as Map<String, dynamic>? ?? {})
-                              .map((key, value) => MapEntry(
-                              key, value is int ? value : int.tryParse(value.toString()) ?? 0));
-                          final prePlatedItems = (savedCart['prePlatedItems'] as Map<String, dynamic>? ?? {})
-                              .map((key, value) => MapEntry(key, Map<String, dynamic>.from(value)));
-                          final additionalServices = (savedCart['additionalServices'] as Map<String, dynamic>? ?? {})
-                              .map((key, value) => MapEntry(key, (value as List<dynamic>).cast<Map<String, dynamic>>()));
-                          final dryCleanTotal = savedCart['dryCleanTotal'] as double? ?? 0.0;
-                          final additionalTotal = savedCart['additionalTotal'] as double? ?? 0.0;
-
-                          washAndFoldItems['Premium Laundry'] = (washAndFoldItems['Premium Laundry'] ?? 0) + 1;
-
-                          await CartPersistence.saveCart(
-                            dryCleanItems: dryCleanItems,
-                            ironingItems: ironingItems,
-                            washAndFoldItems: washAndFoldItems,
-                            washAndIronItems: washAndIronItems,
-                            washIronStarchItems: washIronStarchItems,
-                            prePlatedItems: prePlatedItems,
-                            additionalServices: additionalServices,
-                            dryCleanTotal: dryCleanTotal,
-                            additionalTotal: additionalTotal,
-                          );
-
-                          setState(() {
-                            _isPremiumBooked = true;
-                          });
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Premium Laundry added to cart"),
-                              backgroundColor: Colors.green,
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-
-                          Navigator.push(
-                            context,
-                            PageTransition(
-                              type: PageTransitionType.rightToLeft,
-                              child: CartPage(
-                                dryCleanItems: dryCleanItems,
-                                ironingItems: ironingItems,
-                                washAndFoldItems: washAndFoldItems,
-                                washAndIronItems: washAndIronItems,
-                                washIronStarchItems: washIronStarchItems,
-                                prePlatedItems: prePlatedItems,
-                                additionalServices: additionalServices,
-                                dryCleanTotal: dryCleanTotal,
-                                additionalTotal: additionalTotal,
-                              ),
-                            ),
-                          ).then((_) {
-                            _checkPremiumBookedStatus();
-                            _updateCartItemCount();
-                          });
-                        } catch (e) {
-                          _showSnackBar("Error adding to cart: ${e.toString()}", isError: true);
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _isPremiumBooked ? Colors.grey : bgColorPink,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      child: Text(
-                        _isPremiumBooked ? "Already in Cart" : "Book Now",
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDrawerMenu() {
-    String fullAddressString = "No address selected";
-    if (_currentAddress != null) {
-      final door = _currentAddress!['doorNumber'] ?? '';
-      final street = _currentAddress!['street'] ?? '';
-      final label = _currentAddress!['label'] ?? 'Address';
-      fullAddressString = "$label: $door, $street";
-    }
-
-    return Drawer(
-      child: Column(
-        children: [
-          Container(
-            color: bgColorPink,
-            width: double.infinity,
-            padding: const EdgeInsets.only(top: 40, bottom: 24),
-            child: Column(
-              children: [
-                const CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person, size: 40, color: bgColorPink),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  _userName,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    fullAddressString,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.white70,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Divider(
-            color: Colors.grey,
-            thickness: 1,
-            indent: 16,
-            endIndent: 16,
-          ),
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.receipt_long, color: bgColorPink),
-                  title: const Text("Orders", style: TextStyle(fontSize: 16, color: Colors.black87)),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                  onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const UserOrdersPage()));
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.local_laundry_service, color: bgColorPink),
-                  title: const Text("Active Subscriptions", style: TextStyle(fontSize: 16, color: Colors.black87)),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                  onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const SubscriptionDetailsPage()));
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.phone, color: bgColorPink),
-                  title: const Text("Contact", style: TextStyle(fontSize: 16, color: Colors.black87)),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                  onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const ContactPage()));
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.settings, color: bgColorPink),
-                  title: const Text("Settings", style: TextStyle(fontSize: 16, color: Colors.black87)),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                  onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.feedback, color: bgColorPink),
-                  title: const Text("Feedback", style: TextStyle(fontSize: 16, color: Colors.black87)),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                  onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const FeedbackPage()));
-                  },
-                ),
-              ],
-            ),
-          ),
-          const Divider(thickness: 1),
-          Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 10),
-            child: ListTile(
-              leading: const Icon(Icons.logout, color: bgColorPink),
-              title: const Text("Logout", style: TextStyle(fontSize: 16, color: Colors.black87)),
-              onTap: () async {
-                await FirebaseAuth.instance.signOut();
-                HomePage.hasShownInitialAddressPrompt = false;
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _checkForUpdate() async {
-    setState(() => _isCheckingUpdate = true);
-    try {
-      PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      _currentVersion = packageInfo.version;
-      print("Current app version: $_currentVersion");
-
-      AppUpdateInfo appUpdateInfo = await InAppUpdate.checkForUpdate();
-      print("Update availability: ${appUpdateInfo.updateAvailability}");
-
-      if (appUpdateInfo.updateAvailability == UpdateAvailability.updateAvailable) {
-        setState(() => _isUpdateAvailable = true);
-        print("Update available. Update type: ${appUpdateInfo.updatePriority}");
-
-        if (appUpdateInfo.immediateUpdateAllowed) {
-          print("Starting immediate update...");
-          await InAppUpdate.performImmediateUpdate();
-        } else if (appUpdateInfo.flexibleUpdateAllowed) {
-          print("Starting flexible update...");
-          await InAppUpdate.startFlexibleUpdate();
-        }
-      } else {
-        print("No update available.");
-      }
-    } catch (e) {
-      print("Error checking for update via API: $e");
-    } finally {
-      setState(() => _isCheckingUpdate = false);
-    }
-  }
-
-  void _launchPlayStore() async {
-    const String packageName = "com.laundry.steam";
-    final Uri uri = Uri.parse("market://details?id=$packageName");
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      final Uri webUri = Uri.parse("https://play.google.com/store/apps/details?id=$packageName");
-      if (await canLaunchUrl(webUri)) {
-        await launchUrl(webUri);
-      } else {
-        _showSnackBar("Could not open Play Store.", isError: true);
-      }
-    }
-  }
-
-  Widget _buildMobileLayout() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Container(
-            color: bgColorPink,
-            padding: const EdgeInsets.only(top: 30, left: 25, bottom: 40, right: 25),
-            width: double.infinity,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  "Book pickups and\nservices with ease",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    height: 1.2,
-                  ),
-                ),
-                SizedBox(height: 15),
-                Text(
-                  "We'll pick up, clean, and deliver your clothes",
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Standard Services",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade800,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final crossAxisCount = constraints.maxWidth > 600 ? 3 : 2;
-                    final itemWidth = (constraints.maxWidth - ((crossAxisCount - 1) * 15)) / crossAxisCount; // 15 is crossAxisSpacing
-                    final aspectRatio = itemWidth / 180; // 180 is the fixed height from _buildServiceCard
-
-                    return GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        childAspectRatio: aspectRatio,
-                        crossAxisSpacing: 15,
-                        mainAxisSpacing: 15,
-                      ),
-                      itemCount: standardServices.length,
-                      itemBuilder: (context, index) {
-                        return _buildServiceCard(standardServices[index], context);
-                      },
-                    );
-                  },
-                ),
-                const SizedBox(height: 30),
-                Text(
-                  "Premium Services",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade800,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                ...premiumServices.map((service) => _buildPremiumCard(service, context)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-
-  Widget _buildWebLayout() {
-    return SingleChildScrollView(
-      child: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 1200),
-          padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 30),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Column(
             children: [
-              Expanded(
-                flex: 1,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 30),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Book pickups and\nservices with ease",
-                        style: TextStyle(
-                          fontSize: 48,
-                          fontWeight: FontWeight.bold,
-                          color: bgColorPink,
-                          height: 1.2,
+              SizedBox(
+                height: 140, width: double.infinity,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset(service['image'] as String, fit: BoxFit.cover),
+                    Container(decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.black.withValues(alpha: 0.4), Colors.black.withValues(alpha: 0.4)], begin: Alignment.topCenter, end: Alignment.bottomCenter))),
+                    Positioned(
+                      top: 12, right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFFA500)]),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [BoxShadow(color: Colors.orange.withValues(alpha: 0.4), blurRadius: 8)],
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.star_rounded, color: Colors.white, size: 12),
+                            SizedBox(width: 4),
+                            Text("PREMIUM", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      Text(
-                        "We'll pick up, clean, and deliver your clothes",
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-              Expanded(
-                flex: 2,
+              Padding(
+                padding: const EdgeInsets.all(18),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Standard Services",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade800,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(service['name'] as String, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.pinkAccent,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(service['price'] as String, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(service['description'] as String, style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isPremiumBooked ? null : () async {
+                          try {
+                            final savedCart = await CartPersistence.loadCart() ?? {};
+                            final dci  = _parseIntMap(savedCart['dryCleanItems'] as Map<String, dynamic>?);
+                            final ii   = _parseIntMap(savedCart['ironingItems'] as Map<String, dynamic>?);
+                            final wfi  = _parseIntMap(savedCart['washAndFoldItems'] as Map<String, dynamic>?);
+                            final wii  = _parseIntMap(savedCart['washAndIronItems'] as Map<String, dynamic>?);
+                            final wisi = _parseIntMap(savedCart['washIronStarchItems'] as Map<String, dynamic>?);
+                            final ppi  = (savedCart['prePlatedItems'] as Map<String, dynamic>? ?? {}).map((k, v) => MapEntry(k, Map<String, dynamic>.from(v)));
+                            final aS   = (savedCart['additionalServices'] as Map<String, dynamic>? ?? {}).map((k, v) => MapEntry(k, (v as List<dynamic>).cast<Map<String, dynamic>>()));
+                            final dct  = savedCart['dryCleanTotal'] as double? ?? 0.0;
+                            final at   = savedCart['additionalTotal'] as double? ?? 0.0;
+
+                            wfi['Premium Laundry'] = (wfi['Premium Laundry'] ?? 0) + 1;
+
+                            await CartPersistence.saveCart(dryCleanItems: dci, ironingItems: ii, washAndFoldItems: wfi, washAndIronItems: wii, washIronStarchItems: wisi, prePlatedItems: ppi, additionalServices: aS, dryCleanTotal: dct, additionalTotal: at);
+                            setState(() => _isPremiumBooked = true);
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text("Premium Laundry added to cart"), backgroundColor: Colors.green, behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))));
+                            Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: CartPage(dryCleanItems: dci, ironingItems: ii, washAndFoldItems: wfi, washAndIronItems: wii, washIronStarchItems: wisi, prePlatedItems: ppi, additionalServices: aS, dryCleanTotal: dct, additionalTotal: at)))
+                              .then((_) { _checkPremiumBookedStatus(); _updateCartItemCount(); });
+                          } catch (e) {
+                            _showSnackBar("Error adding to cart: ${e.toString()}", isError: true);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _isPremiumBooked ? Colors.grey.shade300 : Colors.pinkAccent,
+                          disabledBackgroundColor: Colors.grey.shade300,
+                          foregroundColor: _isPremiumBooked ? Colors.grey.shade600 : Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          elevation: _isPremiumBooked ? 0 : 2,
+                        ),
+                        child: Text(_isPremiumBooked ? "\u2713 Already in Cart" : "Book Now \u2192", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: _isPremiumBooked ? Colors.grey.shade600 : Colors.white)),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3, // Fixed to 3 columns
-                        childAspectRatio: 1.3, // Adjusted for fixed height of 180px
-                        crossAxisSpacing: 25,
-                        mainAxisSpacing: 25,
-                      ),
-                      itemCount: standardServices.length,
-                      itemBuilder: (context, index) {
-                        return _buildServiceCard(standardServices[index], context);
-                      },
-                    ),
-                    const SizedBox(height: 40),
-                    Text(
-                      "Premium Services",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade800,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    ...premiumServices.map((service) => SizedBox(
-                      width: 500,
-                      child: _buildPremiumCard(service, context),
-                    )),
                   ],
                 ),
               ),
@@ -1343,144 +771,368 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final bool isMobile = MediaQuery.of(context).size.width < 1000;
+  // â”€â”€â”€ Drawer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  Widget _buildDrawerMenu() {
+    String fullAddressString = "No address selected";
+    if (_currentAddress != null) {
+      final door  = _currentAddress!['doorNumber'] ?? '';
+      final street = _currentAddress!['street'] ?? '';
+      final label = _currentAddress!['label'] ?? 'Address';
+      fullAddressString = "$label: $door, $street";
+    }
 
-    return Title(
-      title:'V12 Laundry | Home',
-      color: bgColorPink,
-      child: WillPopScope(
-        onWillPop: () async {
-          SystemNavigator.pop();
-          return false;
-        },
-        child: Scaffold(
-          drawer: _buildDrawerMenu(),
-          appBar: AppBar(
-            backgroundColor: bgColorPink,
-            elevation: 0,
-            title: const Text(''),
-            iconTheme: const IconThemeData(color: Colors.white),
-            actions: [
-              InkWell(
-                onTap: (){_showAddressSelectionSheet(onAddressChanged: _loadCurrentAddress);},
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.location_on, color: Colors.white, size: 18),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          _currentAddress != null
-                              ? (_currentAddress!['label'] as String? ?? 'Select Address')
-                              : 'Select Address',
-                          style: const TextStyle(color: Colors.white, fontSize: 14),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+    return Drawer(
+      child: Column(
+        children: [
+          Container(
+            decoration: const BoxDecoration(gradient: LinearGradient(colors: [_primaryDark, _primary], begin: Alignment.topLeft, end: Alignment.bottomRight)),
+            width: double.infinity,
+            padding: const EdgeInsets.only(top: 56, bottom: 28, left: 16, right: 16),
+            child: Column(
+              children: [
+                Container(
+                  width: 80, height: 80,
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.4), border: Border.all(color: Colors.white, width: 2)),
+                  child: const Icon(Icons.person_rounded, size: 42, color: Colors.white),
+                ),
+                const SizedBox(height: 12),
+                Text(_userName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                const SizedBox(height: 6),
+                Text(fullAddressString, style: const TextStyle(fontSize: 13, color: Colors.white70), maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _drawerTile(Icons.receipt_long_rounded, "Orders", () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UserOrdersPage()))),
+                _drawerTile(Icons.local_laundry_service, "Active Subscriptions", () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionDetailsPage()))),
+                _drawerTile(Icons.phone_rounded, "Contact", () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ContactPage()))),
+                _drawerTile(Icons.settings_rounded, "Settings", () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()))),
+                _drawerTile(Icons.feedback_rounded, "Feedback", () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FeedbackPage()))),
+              ],
+            ),
+          ),
+          const Divider(thickness: 1),
+          Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 10),
+            child: _drawerTile(Icons.logout_rounded, "Logout", () async {
+              await FirebaseAuth.instance.signOut();
+              HomePage.hasShownInitialAddressPrompt = false;
+              if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
+            }, color: Colors.red),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _drawerTile(IconData icon, String label, VoidCallback onTap, {Color color = _primary}) {
+    return ListTile(
+      leading: Icon(icon, color: color),
+      title: Text(label, style: const TextStyle(fontSize: 15, color: Colors.black87)),
+      trailing: Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey[400]),
+      onTap: onTap,
+    );
+  }
+
+  // â”€â”€â”€ Hero banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  Widget _buildHeroBanner() {
+    return SlideTransition(
+      position: _heroSlide,
+      child: FadeTransition(
+        opacity: _heroFade,
+        child: Container(
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.pinkAccent, Color(0xFFFF80AB)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Stack(
+            children: [
+              Positioned(top: -30, right: -30, child: Container(width: 140, height: 140, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.2)))),
+              Positioned(bottom: -20, left: 80, child: Container(width: 80, height: 80, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.1)))),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
                       ),
+                      child: Text("\u{1F44B}  Hello, $_userName", style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text("Fresh clothes,\ndelivered to you.", style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w800, height: 1.2, letterSpacing: -0.5)),
+                    const SizedBox(height: 10),
+                    Text("Pick up \u00b7 Clean \u00b7 Deliver", style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 15)),
+                    const SizedBox(height: 24),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        _statChip(Icons.bolt_rounded, "Fast Delivery"),
+                        _statChip(Icons.eco_rounded, "Eco-Friendly"),
+                        _statChip(Icons.verified_rounded, "Trusted"),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _statChip(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 14),
+          const SizedBox(width: 5),
+          Text(label, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500)),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionHeader(String title, String subtitle) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.black87, letterSpacing: -0.3)),
+        const SizedBox(height: 4),
+        Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
+      ],
+    );
+  }
+
+  // â”€â”€â”€ Layouts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  Widget _buildMobileLayout() {
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(child: _buildHeroBanner()),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+          sliver: SliverToBoxAdapter(child: _sectionHeader("Our Services", "Tap a service to see pricing")),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+          sliver: SliverGrid(
+            delegate: SliverChildBuilderDelegate(
+              (context, i) => _buildServiceCard(standardServices[i], i),
+              childCount: standardServices.length,
+            ),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
+              crossAxisSpacing: 14,
+              mainAxisSpacing: 14,
+              childAspectRatio: 0.9,
+            ),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(20, 30, 20, 0),
+          sliver: SliverToBoxAdapter(child: _sectionHeader("Premium Services", "Elite care for your finest garments")),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 30),
+          sliver: SliverList(delegate: SliverChildBuilderDelegate(
+            (context, i) => _buildPremiumCard(premiumServices[i]),
+            childCount: premiumServices.length,
+          )),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWebLayout() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.pinkAccent, Color(0xFFFF80AB)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1200),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 60),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
+                        ),
+                        child: Text("\u{1F44B}  Welcome back, $_userName", style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                      ),
+                      const SizedBox(height: 20),
+                      const Text("Fresh clothes,\ndelivered to you.", style: TextStyle(color: Colors.white, fontSize: 52, fontWeight: FontWeight.w800, height: 1.1, letterSpacing: -1)),
+                      const SizedBox(height: 16),
+                      Text("We'll pick up, clean, and deliver your clothes.", style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 18)),
+                      const SizedBox(height: 28),
+                      Wrap(spacing: 12, children: [
+                        _statChip(Icons.bolt_rounded, "Fast Delivery"),
+                        _statChip(Icons.eco_rounded, "Eco-Friendly"),
+                        _statChip(Icons.verified_rounded, "Trusted"),
+                      ]),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(width: 4),
-              Stack(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.shopping_cart, color: Colors.white),
-                    onPressed: () async {
-                      try {
-                        final savedCart = await CartPersistence.loadCart() ?? {};
-                        final dryCleanItems = (savedCart['dryCleanItems'] as Map<String, dynamic>? ?? {})
-                            .map((key, value) => MapEntry(
-                            key, value is int ? value : int.tryParse(value.toString()) ?? 0));
-                        final ironingItems = (savedCart['ironingItems'] as Map<String, dynamic>? ?? {})
-                            .map((key, value) => MapEntry(
-                            key, value is int ? value : int.tryParse(value.toString()) ?? 0));
-                        final washAndFoldItems = (savedCart['washAndFoldItems'] as Map<String, dynamic>? ?? {})
-                            .map((key, value) => MapEntry(
-                            key, value is int ? value : int.tryParse(value.toString()) ?? 0));
-                        final washAndIronItems = (savedCart['washAndIronItems'] as Map<String, dynamic>? ?? {})
-                            .map((key, value) => MapEntry(
-                            key, value is int ? value : int.tryParse(value.toString()) ?? 0));
-                        final washIronStarchItems = (savedCart['washIronStarchItems'] as Map<String, dynamic>? ?? {})
-                            .map((key, value) => MapEntry(
-                            key, value is int ? value : int.tryParse(value.toString()) ?? 0));
-                        final prePlatedItems = (savedCart['prePlatedItems'] as Map<String, dynamic>? ?? {})
-                            .map((key, value) => MapEntry(key, Map<String, dynamic>.from(value)));
-                        final additionalServices = (savedCart['additionalServices'] as Map<String, dynamic>? ?? {})
-                            .map((key, value) => MapEntry(key, (value as List<dynamic>).cast<Map<String, dynamic>>()));
-                        final dryCleanTotal = savedCart['dryCleanTotal'] as double? ?? 0.0;
-                        final additionalTotal = savedCart['additionalTotal'] as double? ?? 0.0;
-      
-                        Navigator.push(
-                          context,
-                          PageTransition(
-                            type: PageTransitionType.rightToLeft,
-                            child: CartPage(
-                              dryCleanItems: dryCleanItems,
-                              ironingItems: ironingItems,
-                              washAndFoldItems: washAndFoldItems,
-                              washAndIronItems: washAndIronItems,
-                              washIronStarchItems: washIronStarchItems,
-                              prePlatedItems: prePlatedItems,
-                              additionalServices: additionalServices,
-                              dryCleanTotal: dryCleanTotal,
-                              additionalTotal: additionalTotal,
-                            ),
-                          ),
-                        ).then((_) {
-                          _checkPremiumBookedStatus();
-                          _updateCartItemCount();
-                        });
-                      } catch (e) {
-                        _showSnackBar("Error loading cart: ${e.toString()}", isError: true);
-                      }
-                    },
-                  ),
-                  if (_cartItemCount > 0)
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          _cartItemCount.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              IconButton(
-                icon: const Icon(Icons.account_circle, color: Colors.white),
-                onPressed: _showProfileSheet,
-              ),
-            ],
+            ),
           ),
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: Padding(
+                padding: const EdgeInsets.all(40),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _sectionHeader("Our Services", "Tap a service to see pricing"),
+                    const SizedBox(height: 24),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, childAspectRatio: 1.1, crossAxisSpacing: 20, mainAxisSpacing: 20),
+                      itemCount: standardServices.length,
+                      itemBuilder: (_, i) => _buildServiceCard(standardServices[i], i),
+                    ),
+                    const SizedBox(height: 40),
+                    _sectionHeader("Premium Services", "Elite care for your finest garments"),
+                    const SizedBox(height: 20),
+                    SizedBox(width: 520, child: _buildPremiumCard(premiumServices[0])),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: _primary,
+      elevation: 0,
+      iconTheme: const IconThemeData(color: Colors.white),
+      title: const SizedBox.shrink(),
+      actions: [
+        GestureDetector(
+          onTap: () => _showAddressSelectionSheet(onAddressChanged: _loadCurrentAddress),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 160),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            margin: const EdgeInsets.only(right: 4),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.location_on_rounded, color: Colors.white, size: 16),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    _currentAddress != null ? (_currentAddress!['label'] as String? ?? 'Select') : 'Select Address',
+                    style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Stack(
+          children: [
+            IconButton(icon: const Icon(Icons.shopping_bag_rounded, color: Colors.white), onPressed: _navigateToCart),
+            if (_cartItemCount > 0)
+              Positioned(
+                right: 6, top: 6,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                  constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                  child: Text('$_cartItemCount', style: const TextStyle(color: _primaryDark, fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                ),
+              ),
+          ],
+        ),
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: GestureDetector(
+            onTap: _showProfileSheet,
+            child: Container(
+              width: 36, height: 36,
+              margin: const EdgeInsets.symmetric(vertical: 9),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8, spreadRadius: 1)],
+              ),
+              child: const Icon(Icons.person_rounded, color: _primaryDark, size: 20),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // â”€â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  @override
+  Widget build(BuildContext context) {
+    final bool isMobile = MediaQuery.of(context).size.width < 1000;
+    return Title(
+      title: 'V12 Laundry | Home',
+      color: _primary,
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (!didPop) SystemNavigator.pop();
+        },
+        child: Scaffold(
+          backgroundColor: _surface,
+          drawer: _buildDrawerMenu(),
+          appBar: _buildAppBar(),
           body: isMobile ? _buildMobileLayout() : _buildWebLayout(),
         ),
       ),
     );
   }
 }
+
+
+
+
